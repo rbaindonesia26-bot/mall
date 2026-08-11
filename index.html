@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Sembunyikan scrollbar untuk tampilan mirip aplikasi asli */
         ::-webkit-scrollbar {
             width: 0px;
             background: transparent;
@@ -15,7 +14,6 @@
         body {
             -webkit-tap-highlight-color: transparent;
         }
-        /* Animasi transisi halaman */
         .fade-in {
             animation: fadeIn 0.2s ease-in-out;
         }
@@ -29,27 +27,29 @@
 
     <div id="app" class="w-full max-w-md h-[100dvh] sm:h-[90vh] mx-auto bg-white relative shadow-2xl sm:rounded-[2.5rem] sm:border-8 border-gray-800 overflow-hidden flex flex-col">
         
-        <!-- Notifikasi (Toast) -->
         <div id="toast" class="hidden absolute top-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-5 py-2.5 rounded-full text-xs font-bold z-[100] shadow-2xl transition-all whitespace-nowrap">
         </div>
 
-        <!-- Custom Modal untuk Checkout -->
         <div id="modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-3xl p-6 max-w-[85%] w-full text-center shadow-2xl transform scale-100 transition-transform">
                 <div class="w-16 h-16 bg-[#009669]/10 text-[#009669] rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="check-circle" class="w-8 h-8"></i>
                 </div>
                 <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2">Sukses</h3>
-                <p id="modal-desc" class="text-sm text-gray-600 mb-6">Operasi berhasil dilakukan.</p>
-                <button onclick="window.closeModal()" class="w-full bg-[#009669] text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200">
-                    Selesai
-                </button>
+                <p id="modal-desc" class="text-sm text-gray-600 mb-4">Operasi berhasil dilakukan.</p>
+                
+                <div class="space-y-2">
+                    <a id="modal-wa-btn" href="#" target="_blank" class="hidden w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 flex items-center justify-center gap-2">
+                        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Pesanan ke WA
+                    </a>
+                    <button onclick="window.closeModal()" class="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors">
+                        Selesai
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Area Konten Utama (Scrollable) -->
         <main id="content" class="flex-1 overflow-y-auto relative bg-white pb-24 transition-all duration-300">
-            <!-- Isi layar (Beranda, Keranjang, Akun) akan dirender di sini via JS -->
         </main>
 
         <nav id="bottom-nav" class="absolute bottom-0 w-full bg-white border-t border-gray-100 flex justify-between px-6 pt-3 pb-4 shadow-[0_-10px_30px_rgba(0,0,0,0.04)] z-50 pb-safe transition-transform duration-300">
@@ -71,10 +71,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyAJBYNDoW3lT0mHvO3gH5WKZoEMWTFs_5M",
             authDomain: "suqna-d8344.firebaseapp.com",
@@ -87,16 +86,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
 
-        // State Global
         window.currentView = 'home';
-        window.role = 'buyer'; 
-        window.storeAuthMode = 'login'; 
+        window.userId = null; 
+        window.userEmail = "";
         window.isAddingProduct = false; 
         window.isEditingProfile = false; 
-        window.userId = null;
         window.currentProductDetail = null;
         window.isStoreUnlocked = false; 
+        window.editingProductData = null;
         
         window.banners = [
             {
@@ -127,6 +126,7 @@
         
         window.currentSearchQuery = '';
         window.currentCategoryFilter = 'Semua';
+        window.authMode = 'login';
 
         window.categories = [
             { name: "Semua", icon: "layout-grid", bg: "bg-[#009669]", textColor: "text-[#009669] font-bold", iconColor: "text-white" },
@@ -157,39 +157,10 @@
             "Lainnya": ["Lain-lain / Umum"]
         };
 
-        // Fungsi kompresi gambar agar database Firebase tidak penuh
-        window.handleImageUpload = function(event, callback) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 400; // Kecilkan ukuran maksimal jadi 400px
-                    let w = img.width; let h = img.height;
-                    if (w > h) { if (w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } } 
-                    else { if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; } }
-                    canvas.width = w; canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    callback(canvas.toDataURL('image/jpeg', 0.7)); // Kompres jadi file JPG 70%
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Fungsi merubah pilihan Subkategori otomatis
-        window.updateSubCategories = function() {
-            const mainCat = document.getElementById('maincat-select').value;
-            const subs = window.categoryData[mainCat] || [];
-            document.getElementById('subcat-select').innerHTML = subs.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
-
         window.products = [];
         window.cart = [];
         window.myOrders = [];
+        window.incomingOrders = [];
         window.toastTimeout = null;
         const appId = 'suqna-v1';
 
@@ -203,29 +174,60 @@
             if(window.render) window.render();
         }, (e) => console.error(e));
 
-        signInAnonymously(auth).then((userCredential) => {
-            window.userId = userCredential.user.uid;
-            
-            const profileRef = doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'store_info');
-            onSnapshot(profileRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    window.storeProfile = docSnap.data();
-                    if (window.storeProfile.name && window.storeProfile.name !== "Toko Baru") {
-                        window.isStoreUnlocked = true;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.userId = user.uid;
+                window.userEmail = user.email;
+                
+                const profileRef = doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'store_info');
+                onSnapshot(profileRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        window.storeProfile = docSnap.data();
+                        if (window.storeProfile.name && window.storeProfile.name !== "Toko Baru") {
+                            window.isStoreUnlocked = true;
+                        }
+                    } else {
+                        window.storeProfile = { name: "Toko Baru", phone: "", avatar: "" };
+                        window.isStoreUnlocked = false;
                     }
-                }
-                if(window.render) window.render();
-            }, (e) => console.error(e));
+                    if(window.render) window.render();
+                }, (e) => console.error(e));
 
-            const ordersQuery = query(collection(db, 'artifacts', appId, 'users', window.userId, 'orders'));
-            onSnapshot(ordersQuery, (snapshot) => {
+                const ordersQuery = query(collection(db, 'artifacts', appId, 'users', window.userId, 'orders'));
+                onSnapshot(ordersQuery, (snapshot) => {
+                    window.myOrders = [];
+                    snapshot.forEach((doc) => { window.myOrders.push({ id: doc.id, ...doc.data() }); });
+                    window.myOrders.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    if(window.render) window.render();
+                }, (e) => console.error(e));
+
+                const incomingQuery = query(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
+                onSnapshot(incomingQuery, (snapshot) => {
+                    window.incomingOrders = [];
+                    snapshot.forEach((doc) => {
+                        const dat = doc.data();
+                        if (dat.storeOwnerId === window.userId) {
+                            window.incomingOrders.push({ id: doc.id, ...dat });
+                        }
+                    });
+                    window.incomingOrders.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    if(window.render) window.render();
+                }, (e) => console.error(e));
+                
+            } else {
+                window.userId = null;
+                window.userEmail = "";
+                window.storeProfile = { name: "Toko Baru", phone: "", avatar: "" };
+                window.isStoreUnlocked = false;
                 window.myOrders = [];
-                snapshot.forEach((doc) => { window.myOrders.push({ id: doc.id, ...doc.data() }); });
-                window.myOrders.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-                if(window.render) window.render();
-            }, (e) => console.error(e));
-
-        }).catch((e) => console.error("Auth gagal:", e));
+                window.incomingOrders = [];
+                
+                if(window.currentView === 'account' || window.currentView === 'seller_center' || window.currentView === 'cart') {
+                    window.currentView = 'login';
+                }
+            }
+            if(window.render) window.render();
+        });
 
         window.render = function() {
             const content = document.getElementById('content');
@@ -240,8 +242,15 @@
                 bottomNav.style.transform = 'translateY(0)';
                 content.classList.replace('pb-0', 'pb-24');
                 window.startBannerSlide(); 
-            } else if (window.currentView === 'detail') {
-                content.innerHTML = window.renderProductDetail();
+            } else if (window.currentView === 'login') {
+                content.innerHTML = window.renderLogin();
+                bottomNav.style.transform = 'translateY(150%)'; 
+                content.classList.replace('pb-24', 'pb-0');
+                window.stopBannerSlide();
+            } else if (window.currentView === 'detail' || window.currentView === 'seller_center') {
+                if (window.currentView === 'detail') content.innerHTML = window.renderProductDetail();
+                if (window.currentView === 'seller_center') content.innerHTML = window.renderSellerCenter();
+                
                 bottomNav.style.transform = 'translateY(150%)'; 
                 content.classList.replace('pb-24', 'pb-0');
                 window.stopBannerSlide();
@@ -283,6 +292,52 @@
                 }
             }
             if(window.lucide) window.lucide.createIcons();
+        }
+
+        window.toggleAuthMode = function() {
+            window.authMode = window.authMode === 'login' ? 'register' : 'login';
+            window.render();
+        }
+
+        window.renderLogin = function() {
+            const isLogin = window.authMode === 'login';
+            return `
+                <div class="flex flex-col items-center justify-center min-h-screen px-6 bg-white relative">
+                    <button onclick="window.navigate('home')" class="absolute top-6 left-5 w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-500 shadow-sm border border-gray-200 z-20 hover:bg-gray-100 transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <div class="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-emerald-100">
+                        <i data-lucide="${isLogin ? 'shield-check' : 'user-plus'}" class="w-12 h-12"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-gray-900 mb-2">${isLogin ? 'Selamat Datang Kembali' : 'Daftar Pengguna Baru'}</h2>
+                    <p class="text-[13px] text-gray-500 font-medium mb-8 text-center px-4">
+                        ${isLogin ? 'Silakan masuk menggunakan Email Anda untuk melanjutkan belanja dan mengelola toko.' : 'Buat akun SUQNA Anda sekarang untuk mulai berbelanja dan membuka toko secara gratis.'}
+                    </p>
+                    
+                    <div class="w-full space-y-4 max-w-sm">
+                        <div class="relative">
+                            <i data-lucide="mail" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                            <input type="email" id="auth-email" placeholder="Alamat Email Anda" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-3.5 font-bold text-gray-800 focus:ring-2 focus:ring-[#009669]/50 outline-none transition-all">
+                        </div>
+                        <div class="relative">
+                            <i data-lucide="lock" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                            <input type="password" id="auth-password" placeholder="${isLogin ? 'Kata Sandi Anda' : 'Buat Sandi (Min. 6 Karakter)'}" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-3.5 font-bold text-gray-800 focus:ring-2 focus:ring-[#009669]/50 outline-none transition-all">
+                        </div>
+                        
+                        <div class="pt-4 flex flex-col gap-4">
+                            ${isLogin ? 
+                                `<button onclick="window.processLogin()" class="w-full bg-[#009669] text-white font-extrabold py-4 rounded-xl shadow-lg shadow-emerald-200 transition-transform active:scale-95">Masuk ke Akun</button>` : 
+                                `<button onclick="window.processRegister()" class="w-full bg-[#009669] text-white font-extrabold py-4 rounded-xl shadow-lg shadow-emerald-200 transition-transform active:scale-95">Daftar Sekarang</button>`
+                            }
+                            
+                            <p class="text-center text-xs font-bold text-gray-500 cursor-pointer mt-2" onclick="window.toggleAuthMode()">
+                                ${isLogin ? 'Belum punya akun? <span class="text-[#009669]">Daftar di sini</span>' : 'Sudah punya akun? <span class="text-[#009669]">Masuk di sini</span>'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         window.renderHome = function() {
@@ -392,7 +447,6 @@
         window.renderProductDetail = function() {
             const p = window.currentProductDetail;
             if(!p) return '';
-            const inCart = window.cart.some(item => item.id === p.id);
 
             return `
                 <div class="relative w-full h-[350px] bg-gray-100">
@@ -427,7 +481,12 @@
 
         window.renderCart = function() {
             if (window.cart.length === 0) {
-                return `<div class="flex flex-col items-center justify-center pt-32 text-gray-400">Keranjang Kosong</div>`;
+                return `
+                    <div class="bg-[#009669] pt-12 pb-6 px-5 rounded-b-[2rem] text-white font-extrabold text-2xl">Keranjang</div>
+                    <div class="flex flex-col items-center justify-center pt-24 text-gray-400">
+                        <i data-lucide="shopping-cart" class="w-16 h-16 text-gray-300 mb-2"></i>
+                        <p class="text-sm font-bold text-gray-500">Keranjang Belanja Kosong</p>
+                    </div>`;
             }
             let total = window.cart.reduce((s, i) => s + i.price, 0);
             return `
@@ -450,207 +509,375 @@
         }
 
         window.renderAccount = function() {
-            if (window.role === 'buyer') {
-                return `
-                    <div class="bg-[#009669] pt-10 pb-14 px-5 rounded-b-[2rem] shadow-sm relative z-0">
-                        <h2 class="text-[22px] font-extrabold text-white mb-6">Akun Pembeli</h2>
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg"><i data-lucide="user" class="w-8 h-8 text-[#009669]"></i></div>
-                            <div>
-                                <h3 class="text-white font-extrabold text-xl">Pengguna SUQNA</h3>
-                                <p class="text-emerald-100 text-[11px] font-medium">ID: ${window.userId ? window.userId.substring(0,6).toUpperCase() : '...'}</p>
+            let storeButtonHtml = window.isStoreUnlocked ? 
+                `<button onclick="window.navigate('seller_center')" class="w-full bg-gray-800 text-white font-extrabold py-4 rounded-2xl flex justify-between items-center px-5 shadow-lg shadow-gray-300 transition-transform active:scale-95">
+                    <div class="flex items-center gap-3"><i data-lucide="store" class="w-5 h-5 text-emerald-400"></i> Dasbor Toko Saya</div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                </button>` : 
+                `<button onclick="window.navigate('seller_center')" class="w-full bg-orange-50 border border-orange-100 text-orange-600 font-extrabold py-4 rounded-2xl flex justify-between items-center px-5 shadow-sm transition-transform active:scale-95">
+                    <div class="flex items-center gap-3"><i data-lucide="store" class="w-5 h-5"></i> Mulai Berjualan Gratis</div>
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </button>`;
+
+            let hasNotPaid = window.myOrders.some(o => o.status === 'Belum Bayar');
+            let hasPacked = window.myOrders.some(o => o.status === 'Dikemas');
+            let hasShipped = window.myOrders.some(o => o.status === 'Dikirim');
+
+            return `
+                <div class="bg-[#009669] pt-10 pb-14 px-5 rounded-b-[2rem] shadow-sm relative z-0">
+                    <h2 class="text-[22px] font-extrabold text-white mb-6">Akun Pembeli</h2>
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg"><i data-lucide="user" class="w-8 h-8 text-[#009669]"></i></div>
+                        <div>
+                            <h3 class="text-white font-extrabold text-xl truncate max-w-[200px]">${window.userEmail ? window.userEmail.split('@')[0] : 'Pengguna SUQNA'}</h3>
+                            <p class="text-emerald-100 text-[11px] font-medium">Pengguna Terverifikasi • ID: ${window.userId ? window.userId.substring(0,5).toUpperCase() : '...'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="px-5 -mt-6 relative z-10 pb-24 space-y-4">
+                    ${storeButtonHtml}
+
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                        <h3 class="font-extrabold text-gray-900 text-[13px] mb-3">Pesanan Saya</h3>
+                        <div class="flex justify-between items-center px-1">
+                            <div class="flex flex-col items-center gap-1.5 relative">
+                                <div class="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border border-white ${hasNotPaid ? '' : 'hidden'}"></div>
+                                <i data-lucide="wallet" class="w-6 h-6 text-gray-400"></i><span class="text-[10px] text-gray-500">Belum Bayar</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1.5 relative">
+                                <div class="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border border-white ${hasPacked ? '' : 'hidden'}"></div>
+                                <i data-lucide="package" class="w-6 h-6 text-gray-400"></i><span class="text-[10px] text-gray-500">Dikemas</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1.5 relative">
+                                <div class="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border border-white ${hasShipped ? '' : 'hidden'}"></div>
+                                <i data-lucide="truck" class="w-6 h-6 text-gray-400"></i><span class="text-[10px] text-gray-500">Dikirim</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="px-5 -mt-6 relative z-10 pb-24 space-y-4">
-                        <!-- PENTING: Tombol Akses Toko dipindah ke Atas agar tidak tersembunyi -->
-                        <button onclick="window.toggleRole()" class="w-full bg-emerald-50 border border-emerald-100 text-[#009669] font-extrabold py-4 rounded-2xl flex justify-between items-center px-5 shadow-sm">
-                            <div class="flex items-center gap-2"><i data-lucide="store" class="w-5 h-5"></i> Akses Toko Saya</div>
-                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                        </button>
-
-                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                            <h3 class="font-extrabold text-gray-900 text-[13px] mb-3">Pesanan Saya</h3>
-                            <div class="flex justify-between items-center px-1">
-                                <div class="flex flex-col items-center gap-1.5"><i data-lucide="wallet" class="w-6 h-6 text-gray-400"></i><span class="text-[10px] text-gray-500">Belum Bayar</span></div>
-                                <div class="flex flex-col items-center gap-1.5 relative">
-                                    <div class="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border border-white ${window.myOrders.length > 0 ? '' : 'hidden'}"></div>
-                                    <i data-lucide="package" class="w-6 h-6 text-gray-400"></i><span class="text-[10px] text-gray-500">Dikemas</span>
-                                </div>
-                                <div class="flex flex-col items-center gap-1.5"><i data-lucide="truck" class="w-6 h-6 text-gray-400"></i><span class="text-[10px] text-gray-500">Dikirim</span></div>
-                            </div>
-                        </div>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 min-h-[150px]">
+                        <h3 class="font-extrabold text-gray-900 text-[13px] mb-3">Aktivitas Terakhir</h3>
+                        ${window.myOrders.length === 0 ? '<div class="flex flex-col items-center justify-center pt-4 opacity-50"><i data-lucide="receipt" class="w-8 h-8 text-gray-400 mb-2"></i><p class="text-[10px] text-gray-500 font-medium">Belum ada pesanan.</p></div>' : window.myOrders.map(o => `<div class="mb-3 pb-3 border-b border-gray-50 last:border-0 last:mb-0 last:pb-0"><div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-[#009669] bg-emerald-50 px-2 py-0.5 rounded-full">${o.status}</span><span class="text-[10px] text-gray-400 font-medium">${new Date(o.timestamp).toLocaleDateString('id-ID')}</span></div><div class="flex justify-between items-center"><p class="text-xs font-bold text-gray-800">${o.items.length} Barang</p><p class="text-xs font-black text-gray-900">Rp ${o.totalAmount.toLocaleString('id-ID')}</p></div></div>`).join('')}
                     </div>
-                `;
-            } else {
-                return window.renderStore();
-            }
+
+                    <button onclick="window.processLogout()" class="w-full bg-red-50 text-red-500 border border-red-100 font-extrabold py-3.5 rounded-2xl flex justify-center items-center gap-2 shadow-sm transition-transform active:scale-95 mt-4">
+                        <i data-lucide="log-out" class="w-5 h-5"></i> Keluar Akun
+                    </button>
+                </div>
+            `;
         }
 
-        window.renderStore = function() {
+        window.renderSellerCenter = function() {
             if (!window.isStoreUnlocked) {
-                // Form Registrasi / Login Toko
                 return `
-                    <div class="flex flex-col items-center justify-center min-h-full pt-6 px-5 pb-24 bg-gray-50/30 relative">
-                        <button onclick="window.role='buyer'; window.render();" class="absolute top-6 left-5 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-500 shadow-sm border border-gray-100 z-20 hover:bg-gray-50 transition-colors">
+                    <div class="flex flex-col items-center justify-center min-h-screen pt-6 px-5 pb-10 bg-gray-50 relative">
+                        <button onclick="window.navigate('account')" class="absolute top-6 left-5 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-500 shadow-sm border border-gray-200 z-20 hover:bg-gray-100 transition-colors">
                             <i data-lucide="arrow-left" class="w-5 h-5"></i>
                         </button>
-                        <div class="bg-white rounded-[2rem] p-7 w-full shadow-lg text-center mt-12">
-                            <div class="w-16 h-16 bg-[#009669]/10 text-[#009669] rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="store" class="w-7 h-7"></i>
+                        <div class="bg-white rounded-[2rem] p-7 w-full shadow-xl text-center border border-gray-100 mt-12">
+                            <div class="w-20 h-20 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                                <i data-lucide="store" class="w-10 h-10"></i>
                             </div>
-                            <h3 class="font-extrabold text-[22px] text-gray-900 mb-6">Buka Toko Baru</h3>
-                            <input type="text" id="reg-store-name" placeholder="Nama Toko (Cth: Warung Bu Siti)" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-2xl px-4 py-3.5 mb-4 focus:ring-1 focus:ring-[#009669]">
-                            <button onclick="window.registerNewStore()" class="w-full bg-[#009669] text-white font-extrabold py-3.5 rounded-2xl shadow-lg">
-                                Buka Toko
+                            <h3 class="font-black text-2xl text-gray-900 mb-2">Buka Toko Gratis</h3>
+                            <p class="text-xs text-gray-500 font-medium mb-6">Mulai berjualan dan jangkau ribuan pembeli di SUQNA.</p>
+                            <input type="text" id="reg-store-name" placeholder="Masukkan Nama Toko Anda..." class="w-full bg-gray-50 border border-gray-200 font-bold text-gray-800 rounded-2xl px-5 py-4 mb-5 focus:ring-2 focus:ring-[#009669]/50 outline-none transition-all">
+                            <button onclick="window.registerNewStore()" class="w-full bg-[#009669] text-white font-extrabold py-4 rounded-2xl shadow-lg shadow-emerald-200 transition-transform active:scale-95 text-lg">
+                                Buka Toko Sekarang
                             </button>
                         </div>
-                    </div>`;
+                    `;
             }
 
-            // Ambil daftar Utama untuk Pilihan Select
             let catOptions = Object.keys(window.categoryData).map(c => `<option value="${c}">${c}</option>`).join('');
 
             return `
-                <div class="bg-[#009669] pt-10 pb-14 px-5 rounded-b-[2rem] shadow-sm relative z-0">
+                <div class="bg-gray-900 pt-10 pb-14 px-5 rounded-b-[2rem] shadow-lg relative z-0">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-[22px] font-extrabold text-white">Dashboard Toko</h2>
+                        <div class="flex items-center gap-2">
+                            <div class="bg-emerald-500 text-white text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-wider">SELLER</div>
+                            <h2 class="text-xl font-black text-white">Dasbor Toko</h2>
+                        </div>
                         <div class="flex gap-2">
-                            <button onclick="window.toggleEditProfile()" class="w-9 h-9 bg-white/20 rounded-full text-white flex items-center justify-center shadow-sm hover:bg-white/30"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                            <button onclick="window.role='buyer'; window.render();" class="w-9 h-9 bg-white/20 rounded-full text-white flex items-center justify-center shadow-sm hover:bg-white/30"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+                            <button onclick="window.toggleEditProfile()" class="w-9 h-9 bg-gray-800 rounded-full text-white flex items-center justify-center shadow-sm border border-gray-700 hover:bg-gray-700"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                            <button onclick="window.navigate('account')" class="w-9 h-9 bg-gray-800 rounded-full text-white flex items-center justify-center shadow-sm border border-gray-700 hover:bg-gray-700"><i data-lucide="x" class="w-5 h-5"></i></button>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-white/50">
-                            ${window.storeProfile.avatar ? `<img src="${window.storeProfile.avatar}" class="w-full h-full object-cover">` : `<span class="text-[#009669] text-2xl font-black uppercase">${window.storeProfile.name.charAt(0)}</span>`}
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-gray-700">
+                            ${window.storeProfile.avatar ? `<img src="${window.storeProfile.avatar}" class="w-full h-full object-cover">` : `<span class="text-gray-900 text-2xl font-black uppercase">${window.storeProfile.name.charAt(0)}</span>`}
                         </div>
-                        <div><h3 class="text-white font-extrabold text-xl">${window.storeProfile.name}</h3></div>
+                        <div>
+                            <h3 class="text-white font-black text-xl">${window.storeProfile.name}</h3>
+                            <p class="text-gray-400 text-[11px] font-medium mt-0.5">Toko Aktif</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="px-5 -mt-6 relative z-10 pb-24">
+                <div class="px-5 -mt-6 relative z-10 pb-24 space-y-6">
                     ${window.isEditingProfile ? `
-                        <button onclick="window.toggleEditProfile()" class="w-full bg-white border-2 border-[#009669] text-[#009669] font-extrabold py-3.5 rounded-2xl mb-6 shadow-sm">Batal Edit</button>
-                        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4 flex flex-col items-center">
+                        <button onclick="window.toggleEditProfile()" class="w-full bg-white border-2 border-gray-900 text-gray-900 font-extrabold py-3.5 rounded-2xl mb-2 shadow-sm">Batal Edit</button>
+                        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-lg space-y-4 flex flex-col items-center">
                             
-                            <!-- Upload Logo Toko -->
                             <div class="relative w-24 h-24 mb-2 group cursor-pointer" onclick="document.getElementById('avatar-upload').click()">
                                 <div class="w-full h-full rounded-full overflow-hidden border-4 border-gray-100 shadow-sm bg-gray-50 flex items-center justify-center">
                                     <img id="edit-avatar-preview" src="${window.tempUploadedAvatar || window.storeProfile.avatar || `https://placehold.co/100x100/e2e8f0/64748b?text=${window.storeProfile.name.charAt(0)}`}" class="w-full h-full object-cover">
                                 </div>
-                                <div class="absolute bottom-0 right-0 bg-[#009669] p-2 rounded-full border-2 border-white text-white shadow-md">
+                                <div class="absolute bottom-0 right-0 bg-gray-900 p-2 rounded-full border-2 border-white text-white shadow-md">
                                     <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                                 </div>
                             </div>
                             <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="window.handleImageUpload(event, (url) => { window.tempUploadedAvatar = url; document.getElementById('edit-avatar-preview').src = url; })">
                             <span class="text-[11px] text-gray-400 mb-2 font-medium">Sentuh logo untuk mengubah</span>
 
-                            <input type="text" id="edit-store-name" value="${window.storeProfile.name}" placeholder="Nama Toko Baru" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-center text-lg focus:ring-2 focus:ring-[#009669]/20 outline-none transition-all">
-                            <button onclick="window.saveProfile()" class="w-full bg-[#009669] text-white font-extrabold py-3.5 rounded-2xl mt-4 shadow-lg shadow-emerald-200">Simpan Profil</button>
+                            <input type="text" id="edit-store-name" value="${window.storeProfile.name}" placeholder="Nama Toko Baru" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 text-center text-lg focus:ring-2 focus:ring-gray-900/20 outline-none transition-all">
+                            
+                            <input type="text" id="edit-store-phone" value="${window.storeProfile.phone || ''}" placeholder="No WhatsApp (Cth: 628123456789)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 text-center text-sm focus:ring-2 focus:ring-gray-900/20 outline-none transition-all">
+                            
+                            <button onclick="window.saveProfile()" class="w-full bg-gray-900 text-white font-extrabold py-3.5 rounded-2xl mt-4 shadow-lg shadow-gray-300">Simpan Profil</button>
                         </div>
                     ` : !window.isAddingProduct ? `
-                        <button onclick="window.toggleAddProduct()" class="w-full bg-white border border-[#009669] text-[#009669] font-extrabold py-3.5 rounded-2xl mb-8 flex justify-center items-center gap-2 shadow-sm">
-                            <i data-lucide="plus" class="w-5 h-5"></i> Tambah Dagangan Baru
+                        <button onclick="window.toggleAddProduct()" class="w-full bg-gray-900 text-white font-extrabold py-4 rounded-2xl flex justify-center items-center gap-2 shadow-lg shadow-gray-300 transition-transform active:scale-95">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i> Tambah Dagangan Baru
                         </button>
-                        <div class="flex items-center gap-2 mb-4"><h3 class="font-extrabold text-gray-900 text-lg">Etalase Anda</h3></div>
-                        <div class="grid grid-cols-2 gap-4">
-                            ${window.products.filter(p => p.ownerId === window.userId).map(p => `
-                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
-                                    <button onclick="window.deleteProduct('${p.id}')" class="absolute top-2 right-2 z-10 bg-white/90 backdrop-blur text-red-500 p-1.5 rounded-full shadow-sm opacity-90 hover:opacity-100 transition-opacity"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                    <img src="${p.imgUrl}" class="h-28 w-full object-cover">
-                                    <div class="p-3">
-                                        <div class="text-[8px] font-bold text-[#009669] bg-emerald-50 inline-block px-1.5 py-0.5 rounded-md mb-1.5 truncate max-w-full">${p.category}</div>
-                                        <h3 class="font-semibold text-xs leading-tight mb-1 line-clamp-1 text-gray-800">${p.name}</h3>
-                                        <p class="text-[#009669] font-black text-xs">Rp ${p.price.toLocaleString('id-ID')}</p>
+
+                        <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-extrabold text-gray-900 text-sm">Pesanan Masuk</h3>
+                                <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">${window.incomingOrders.length} Pesanan</span>
+                            </div>
+                            <div class="space-y-3">
+                                ${window.incomingOrders.length === 0 ? '<p class="text-xs text-gray-400 text-center py-4">Belum ada pesanan masuk.</p>' : window.incomingOrders.map(o => `
+                                    <div class="border border-gray-100 rounded-xl p-3 bg-gray-50">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-[10px] font-bold text-[#009669] bg-emerald-50 px-2 py-0.5 rounded-full">${o.status}</span>
+                                            <span class="text-[10px] text-gray-400">${new Date(o.timestamp).toLocaleDateString('id-ID')}</span>
+                                        </div>
+                                        <p class="text-xs font-bold text-gray-800 mb-2">${o.items.map(i => `${i.name} (x1)`).join(', ')}</p>
+                                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                            <span class="text-xs font-black text-gray-900">Rp ${o.totalAmount.toLocaleString('id-ID')}</span>
+                                            ${o.status === 'Dikemas' ? `<button onclick="window.updateOrderStatus('${o.id}', 'Dikirim')" class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">Kirim Barang</button>` : `<span class="text-[11px] font-bold text-gray-500">${o.status}</span>`}
+                                        </div>
                                     </div>
-                                </div>
-                            `).join('')}
-                            ${window.products.filter(p => p.ownerId === window.userId).length === 0 ? '<div class="col-span-2 text-center py-6 text-gray-400 text-sm">Etalase Anda masih kosong.</div>' : ''}
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center gap-2 mb-4"><h3 class="font-extrabold text-gray-900 text-lg">Kelola Etalase</h3><span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-bold">${window.products.filter(p => p.ownerId === window.userId).length} Barang</span></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                ${window.products.filter(p => p.ownerId === window.userId).map(p => `
+                                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 relative overflow-hidden group flex flex-col">
+                                        <div class="absolute top-2 right-2 z-10 flex gap-1">
+                                            <button onclick="window.editProduct('${p.id}')" class="bg-white/90 backdrop-blur text-blue-600 p-1.5 rounded-full shadow-sm"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                            <button onclick="window.deleteProduct('${p.id}')" class="bg-white/90 backdrop-blur text-red-500 p-1.5 rounded-full shadow-sm"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                        </div>
+                                        <div class="h-28 bg-gray-50 w-full relative">
+                                            <img src="${p.imgUrl}" class="h-full w-full object-cover">
+                                        </div>
+                                        <div class="p-3 flex-1 flex flex-col">
+                                            <div class="text-[8px] font-bold text-gray-600 bg-gray-100 inline-block px-1.5 py-0.5 rounded-md mb-1.5 truncate max-w-full">${p.category}</div>
+                                            <h3 class="font-semibold text-xs leading-tight mb-2 line-clamp-2 text-gray-800">${p.name}</h3>
+                                            <div class="mt-auto">
+                                                <p class="text-gray-900 font-black text-xs">Rp ${p.price.toLocaleString('id-ID')}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                ${window.products.filter(p => p.ownerId === window.userId).length === 0 ? '<div class="col-span-2 text-center py-10 bg-white rounded-2xl border border-dashed border-gray-300"><i data-lucide="package-open" class="w-10 h-10 text-gray-300 mx-auto mb-2"></i><p class="text-gray-400 text-sm font-medium">Belum ada dagangan.</p></div>' : ''}
+                            </div>
                         </div>
                     ` : `
-                        <button onclick="window.toggleAddProduct()" class="w-full bg-white border-2 border-[#009669] text-[#009669] font-extrabold py-3.5 rounded-2xl mb-6 shadow-sm">Batal Tambah</button>
-                        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4">
+                        <button onclick="window.toggleAddProduct()" class="w-full bg-white border-2 border-gray-900 text-gray-900 font-extrabold py-3.5 rounded-2xl mb-6 shadow-sm">Batal Tambah</button>
+                        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-lg space-y-4">
                             
-                            <!-- Upload Foto Produk -->
                             <div class="w-full h-32 bg-gray-50 hover:bg-gray-100 transition-colors border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group" onclick="document.getElementById('prod-img-upload').click()">
-                                <img id="new-prod-preview" src="" class="w-full h-full object-cover hidden absolute inset-0 z-10">
-                                <i data-lucide="image-plus" class="w-8 h-8 text-gray-400 group-hover:text-[#009669] mb-2 relative z-0 transition-colors"></i>
+                                <img id="new-prod-preview" src="${window.tempProductImg || ''}" class="w-full h-full object-cover ${window.tempProductImg ? '' : 'hidden'} absolute inset-0 z-10">
+                                <i data-lucide="image-plus" class="w-8 h-8 text-gray-400 group-hover:text-gray-900 mb-2 relative z-0 transition-colors"></i>
                                 <span class="text-xs text-gray-500 font-medium relative z-0">Unggah Foto Barang</span>
                             </div>
                             <input type="file" id="prod-img-upload" class="hidden" accept="image/*" onchange="window.handleImageUpload(event, (url) => { window.tempProductImg = url; const img = document.getElementById('new-prod-preview'); img.src = url; img.classList.remove('hidden'); })">
 
-                            <input type="text" id="new-prod-name" placeholder="Nama Barang (Cth: Madu Hutan Asli)" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-800 focus:ring-2 focus:ring-[#009669]/20 outline-none transition-all">
+                            <input type="text" id="new-prod-name" value="${window.editingProductData ? window.editingProductData.name : ''}" placeholder="Nama Barang (Cth: Baju Koko)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium text-gray-800 focus:ring-2 focus:ring-gray-900/20 outline-none transition-all">
                             
                             <div class="relative">
                                 <span class="absolute left-4 top-3.5 text-gray-500 font-bold text-sm">Rp</span>
-                                <input type="number" id="new-prod-price" placeholder="Harga" class="w-full bg-gray-50 border border-gray-100 rounded-xl pl-11 pr-4 py-3 font-bold text-gray-800 focus:ring-2 focus:ring-[#009669]/20 outline-none transition-all">
+                                <input type="number" id="new-prod-price" value="${window.editingProductData ? window.editingProductData.price : ''}" placeholder="Harga" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-4 py-3 font-bold text-gray-800 focus:ring-2 focus:ring-gray-900/20 outline-none transition-all">
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-[10px] text-gray-500 font-bold ml-1 mb-1 block">Kategori Utama</label>
-                                    <select id="maincat-select" onchange="window.updateSubCategories()" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-2 py-3 text-xs text-gray-700 font-medium focus:ring-2 focus:ring-[#009669]/20 outline-none">
+                                    <select id="maincat-select" onchange="window.updateSubCategories()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-2 py-3 text-xs text-gray-700 font-medium focus:ring-2 focus:ring-gray-900/20 outline-none">
                                         <option value="" disabled selected>Pilih Kategori...</option>
                                         ${catOptions}
                                     </select>
                                 </div>
                                 <div>
                                     <label class="text-[10px] text-gray-500 font-bold ml-1 mb-1 block">Subkategori</label>
-                                    <select id="subcat-select" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-2 py-3 text-xs text-gray-700 font-medium focus:ring-2 focus:ring-[#009669]/20 outline-none">
+                                    <select id="subcat-select" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-2 py-3 text-xs text-gray-700 font-medium focus:ring-2 focus:ring-gray-900/20 outline-none">
                                         <option value="" disabled selected>-</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <textarea id="new-prod-desc" placeholder="Tuliskan deskripsi lengkap, bahan, atau garansi..." rows="3" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-800 text-sm focus:ring-2 focus:ring-[#009669]/20 outline-none transition-all"></textarea>
+                            <textarea id="new-prod-desc" placeholder="Tuliskan deskripsi lengkap, bahan, atau garansi..." rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium text-gray-800 text-sm focus:ring-2 focus:ring-gray-900/20 outline-none transition-all">${window.editingProductData ? (window.editingProductData.description || '') : ''}</textarea>
 
-                            <button onclick="window.saveProduct()" class="w-full bg-[#009669] text-white font-extrabold py-3.5 rounded-2xl mt-2 shadow-lg shadow-emerald-200">Tayangkan di Pasar</button>
+                            <button onclick="window.saveProduct()" class="w-full bg-gray-900 text-white font-extrabold py-4 rounded-2xl mt-2 shadow-lg shadow-gray-300 transition-transform active:scale-95">${window.editingProductData ? 'Simpan Perubahan' : 'Tayangkan di Pasar'}</button>
                         </div>
                     `}
                 </div>
             `;
         }
 
-        window.navigate = function(view) { window.currentView = view; window.render(); }
-        window.filterCategory = function(c) { window.currentCategoryFilter = c; window.render(); }
-        window.handleSearch = function(q) { window.currentSearchQuery = q; window.render(); }
-        window.openProductDetail = function(id) { window.currentProductDetail = window.products.find(p=>p.id===id); window.navigate('detail'); }
-        window.addToCart = function(id) { 
-            const p = window.products.find(p=>p.id===id); 
-            if(p){ window.cart.push(p); window.showToastMessage('Ditambahkan ke keranjang'); window.render(); }
-        }
-        window.removeFromCart = function(i) { window.cart.splice(i,1); window.render(); }
-        
-        window.toggleRole = function() {
-            window.role = window.role === 'buyer' ? 'seller' : 'buyer';
-            window.render();
+        window.navigate = function(view) { 
+            if ((view === 'account' || view === 'seller_center' || view === 'cart') && !window.userId) {
+                window.currentView = 'login';
+            } else {
+                window.currentView = view; 
+            }
+            window.render(); 
         }
 
-        window.registerNewStore = function() {
-            const nameInput = document.getElementById('reg-store-name').value;
-            if(nameInput) {
-                window.storeProfile.name = nameInput;
-                if(window.userId) setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'store_info'), window.storeProfile);
-                window.isStoreUnlocked = true;
+        window.openProductDetail = function(id) {
+            const p = window.products.find(x => x.id === id);
+            if(p) {
+                window.currentProductDetail = p;
+                window.currentView = 'detail';
                 window.render();
             }
         }
+
+        window.addToCart = function(id) {
+            const p = window.products.find(x => x.id === id);
+            if(p) {
+                window.cart.push(p);
+                window.showToastMessage('Berhasil ditambahkan ke keranjang!');
+                if(window.render) window.render();
+            }
+        }
+
+        window.removeFromCart = function(index) {
+            window.cart.splice(index, 1);
+            window.showToastMessage('Barang dihapus dari keranjang.');
+            window.render();
+        }
+
+        window.filterCategory = function(catName) {
+            window.currentCategoryFilter = catName;
+            window.render();
+        }
+
+        window.handleSearch = function(val) {
+            window.currentSearchQuery = val;
+            const grid = document.getElementById('product-grid');
+            if(grid) grid.innerHTML = window.buildProductGridHTML();
+        }
         
-        window.toggleAddProduct = function() { window.isAddingProduct = !window.isAddingProduct; window.render(); }
+        window.processLogin = async function() {
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-password').value;
+            if(!e || !p) return window.showToastMessage('Email dan Kata Sandi wajib diisi!');
+            try {
+                await signInWithEmailAndPassword(auth, e, p);
+                window.showToastMessage('Berhasil Masuk!');
+                window.navigate('account');
+            } catch(err) {
+                console.error(err);
+                let msg = 'Gagal Masuk: Terjadi kesalahan.';
+                if(err.code === 'auth/invalid-credential') msg = 'Gagal: Email atau Sandi salah!';
+                else if(err.code === 'auth/invalid-email') msg = 'Gagal: Format email tidak valid!';
+                else msg = 'Gagal: ' + err.code;
+                window.showToastMessage(msg);
+            }
+        }
+
+        window.processRegister = async function() {
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-password').value;
+            if(!e || !p) return window.showToastMessage('Email dan Kata Sandi wajib diisi!');
+            try {
+                await createUserWithEmailAndPassword(auth, e, p);
+                window.showToastMessage('Berhasil Daftar!');
+                window.navigate('account');
+            } catch(err) {
+                console.error(err);
+                let msg = 'Gagal Daftar: Terjadi kesalahan.';
+                if(err.code === 'auth/email-already-in-use') msg = 'Gagal: Email sudah terdaftar!';
+                else if(err.code === 'auth/weak-password') msg = 'Gagal: Sandi terlalu lemah (Min 6 karakter)!';
+                else msg = 'Gagal: ' + err.code;
+                window.showToastMessage(msg);
+            }
+        }
+
+        window.processLogout = async function() {
+            await signOut(auth);
+            window.showToastMessage('Berhasil Keluar');
+            window.navigate('home');
+        }
+
+        window.registerNewStore = async function() {
+            const name = document.getElementById('reg-store-name').value;
+            if(name && window.userId) {
+                window.storeProfile.name = name;
+                await setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'store_info'), window.storeProfile);
+                window.isStoreUnlocked = true;
+                window.showToastMessage('Toko Berhasil Dibuat!');
+                window.render();
+            } else {
+                window.showToastMessage('Nama toko wajib diisi!');
+            }
+        }
+
+        window.toggleAddProduct = function() { 
+            window.isAddingProduct = !window.isAddingProduct; 
+            if(!window.isAddingProduct) window.editingProductData = null;
+            window.render(); 
+        }
+        
+        window.editProduct = function(id) {
+            const p = window.products.find(x => x.id === id);
+            if(p) {
+                window.editingProductData = p;
+                window.tempProductImg = p.imgUrl;
+                window.isAddingProduct = true;
+                window.render();
+                
+                setTimeout(() => {
+                    let parentCat = "";
+                    for (const [main, subs] of Object.entries(window.categoryData)) {
+                        if (subs.includes(p.category) || main === p.category) parentCat = main;
+                    }
+                    if(parentCat) {
+                        const mainSelect = document.getElementById('maincat-select');
+                        if(mainSelect) {
+                            mainSelect.value = parentCat;
+                            window.updateSubCategories();
+                            setTimeout(() => {
+                                const subSelect = document.getElementById('subcat-select');
+                                if(subSelect) subSelect.value = p.category;
+                            }, 10);
+                        }
+                    }
+                }, 50);
+            }
+        }
+
         window.toggleEditProfile = function() { window.isEditingProfile = !window.isEditingProfile; window.render(); }
 
         window.saveProfile = async function() {
             const newName = document.getElementById('edit-store-name').value;
+            const newPhone = document.getElementById('edit-store-phone') ? document.getElementById('edit-store-phone').value : window.storeProfile.phone;
+            
             if(newName) {
                 window.storeProfile.name = newName;
-                // Update logo jika ada foto baru yang diunggah
+                window.storeProfile.phone = newPhone;
                 if(window.tempUploadedAvatar) {
                     window.storeProfile.avatar = window.tempUploadedAvatar;
                 }
                 if(window.userId) await setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'store_info'), window.storeProfile);
                 window.isEditingProfile = false;
-                window.tempUploadedAvatar = ''; // Bersihkan memori foto
+                window.tempUploadedAvatar = ''; 
                 window.showToastMessage('Profil Toko Diperbarui!');
                 window.render();
             }
@@ -662,21 +889,29 @@
             const subcat = document.getElementById('subcat-select').value;
             const desc = document.getElementById('new-prod-desc').value;
             
-            // Validasi: Pastikan nama, harga, dan subkategori telah diisi!
             if(name && price && subcat) {
-                // Gunakan foto yang diunggah, atau otomatis bikin placeholder warna hijau
-                const finalImgUrl = window.tempProductImg || `https://placehold.co/400x400/009669/ffffff?text=${name.substring(0,2).toUpperCase()}`;
+                const finalImgUrl = window.tempProductImg || (window.editingProductData ? window.editingProductData.imgUrl : `https://placehold.co/400x400/009669/ffffff?text=${name.substring(0,2).toUpperCase()}`);
                 
                 const p = {
                     name: name, price: price, category: subcat, description: desc,
-                    storeName: window.storeProfile.name, ownerId: window.userId,
+                    storeName: window.storeProfile.name, 
+                    storePhone: window.storeProfile.phone || '',
+                    ownerId: window.userId,
                     imgUrl: finalImgUrl,
-                    timestamp: Date.now()
+                    timestamp: window.editingProductData ? window.editingProductData.timestamp : Date.now()
                 };
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), p);
+                
+                if (window.editingProductData) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', window.editingProductData.id), p);
+                    window.showToastMessage('Barang Berhasil Diperbarui');
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), p);
+                    window.showToastMessage('Barang Berhasil Ditambahkan');
+                }
+                
                 window.isAddingProduct = false;
-                window.tempProductImg = ''; // Bersihkan memori foto produk
-                window.showToastMessage('Barang Berhasil Ditambahkan');
+                window.editingProductData = null;
+                window.tempProductImg = ''; 
                 window.render();
             } else {
                 window.showToastMessage('Gagal: Isi Nama, Harga & Kategori!');
@@ -685,14 +920,38 @@
 
         window.deleteProduct = async function(id) {
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+            window.showToastMessage('Barang Dihapus');
         }
 
         window.processCheckout = async function() {
             if(window.cart.length > 0 && window.userId) {
-                const order = { items: window.cart, totalAmount: window.cart.reduce((s,i)=>s+i.price,0), status: 'Dikemas', timestamp: Date.now() };
+                const totalAmount = window.cart.reduce((s,i)=>s+i.price,0);
+                const firstItem = window.cart[0];
+                const order = { 
+                    items: window.cart, 
+                    totalAmount: totalAmount, 
+                    status: 'Dikemas', 
+                    timestamp: Date.now(),
+                    storeOwnerId: firstItem.ownerId || ''
+                };
+                
                 await addDoc(collection(db, 'artifacts', appId, 'users', window.userId, 'orders'), order);
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), order);
+                
+                let waLink = null;
+                const phone = firstItem.storePhone; 
+                if(phone) {
+                    let text = `Halo *${firstItem.storeName}*,\nSaya tertarik memesan:\n\n`;
+                    window.cart.forEach(item => { text += `- ${item.name} (Rp ${item.price.toLocaleString('id-ID')})\n`; });
+                    text += `\n*Total: Rp ${totalAmount.toLocaleString('id-ID')}*\n\nMohon informasi pembayarannya ya. Terima kasih!`;
+                    
+                    let cleanPhone = phone.replace(/\D/g, '');
+                    if(cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1); 
+                    waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+                }
+
                 window.cart = [];
-                window.showModal('Pesanan Berhasil', 'Pesanan masuk ke aktivitas.');
+                window.showModal('Pesanan Berhasil', 'Pesanan masuk ke aktivitas.', waLink);
                 window.navigate('account');
             }
         }
@@ -701,16 +960,37 @@
             const t = document.getElementById('toast'); t.innerText = m;
             t.classList.remove('hidden'); t.classList.add('animate-bounce');
             clearTimeout(window.toastTimeout);
-            window.toastTimeout = setTimeout(() => { t.classList.add('hidden'); }, 2500);
+            window.toastTimeout = setTimeout(() => { t.classList.add('hidden'); t.classList.remove('animate-bounce'); }, 2500);
         }
         
-        window.showModal = function(title, desc) {
+        window.showModal = function(title, desc, waLink = null) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-desc').innerText = desc;
+            
+            const waBtn = document.getElementById('modal-wa-btn');
+            if(waBtn) {
+                if(waLink) {
+                    waBtn.href = waLink;
+                    waBtn.classList.remove('hidden');
+                } else {
+                    waBtn.classList.add('hidden');
+                }
+            }
+            
             document.getElementById('modal').classList.remove('hidden');
         }
 
         window.closeModal = function() { document.getElementById('modal').classList.add('hidden'); }
+
+        window.updateOrderStatus = async function(orderId, newStatus) {
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), { status: newStatus });
+                window.showToastMessage('Status Berhasil Diubah!');
+            } catch(e) {
+                console.error(e);
+                window.showToastMessage('Gagal mengubah status.');
+            }
+        }
 
         window.startBannerSlide = function() {
             clearInterval(window.bannerInterval);
