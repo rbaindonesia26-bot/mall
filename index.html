@@ -1449,16 +1449,49 @@
             }
         }
 
-        // Base64 Image Handler (100% Gratis & Stabil)
+        // Base64 Image Handler (Dengan Kompresi Otomatis)
         window.handleImageBase64 = function(event, callback) {
             const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    callback(e.target.result);
-                };
-                reader.readAsDataURL(file);
+            if(!file) return;
+
+            // Jika file bukan gambar, tolak
+            if(!file.type.startsWith('image/')) {
+                window.showToastMessage('Harap unggah file gambar!');
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Batasi ukuran maksimal gambar (Maksimal resolusi 800px)
+                    const MAX_SIZE = 800;
+                    if (width > MAX_SIZE || height > MAX_SIZE) {
+                        if (width > height) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        } else {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Kompres menjadi format JPEG dengan kualitas 70% agar sangat ringan
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    callback(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         window.showToastMessage = function(m) {
