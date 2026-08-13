@@ -152,6 +152,7 @@
         window.currentProductDetail = null;
         window.isStoreUnlocked = false; 
         window.editingProductData = null;
+        window.pendingRoute = true; // Fitur Baca Link URL Otomatis
         
         // Modal Ulasan
         window.currentReviewOrderId = null;
@@ -250,6 +251,21 @@
             window.products = [];
             snapshot.forEach((doc) => { window.products.push({ id: doc.id, ...doc.data() }); });
             window.products.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+            
+            // Logika Membuka Link Share Produk Otomatis
+            if (window.pendingRoute && window.products.length > 0) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const shareId = urlParams.get('product');
+                if (shareId) {
+                    const p = window.products.find(x => x.id === shareId);
+                    if (p) {
+                        window.currentProductDetail = p;
+                        window.currentView = 'detail';
+                    }
+                }
+                window.pendingRoute = false;
+            }
+
             if(window.render) window.render();
         }, (e) => console.error(e));
 
@@ -330,6 +346,13 @@
             } else {
                 window.currentView = view; 
             }
+
+            // Bersihkan URL dari parameter share saat pindah ke Beranda
+            if (view === 'home' && window.history.pushState) {
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.pushState({path: cleanUrl}, '', cleanUrl);
+            }
+
             window.render(); 
         }
 
@@ -1089,6 +1112,9 @@
                     <button onclick="window.navigate('home')" class="absolute top-6 left-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-white transition-colors">
                         <i data-lucide="arrow-left" class="w-5 h-5"></i>
                     </button>
+                    <button onclick="window.shareProduct('${p.id}')" class="absolute top-6 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-[#009669] hover:bg-[#009669] hover:text-white transition-all active:scale-95">
+                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                    </button>
                     <img src="${p.imgUrl}" alt="${p.name}" class="w-full h-full object-cover">
                 </div>
                 <div class="bg-white -mt-6 relative z-10 rounded-t-[2rem] px-5 pt-8 pb-32 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
@@ -1173,6 +1199,36 @@
         window.removeFromCart = function(index) {
             window.cart.splice(index, 1);
             window.render();
+        }
+
+        // Fitur Share Link Produk
+        window.shareProduct = async function(id) {
+            const p = window.products.find(x => x.id === id);
+            if(!p) return;
+            
+            const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + id;
+            const shareData = {
+                title: p.name,
+                text: 'Cek ' + p.name + ' di SUQNA! Pasar Kita, Untuk Semua.',
+                url: shareUrl
+            };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData); // Fitur Share Bawaan HP (WA, FB, dll)
+                } else {
+                    // Fitur Copy Tautan (PC/Browser Desktop)
+                    const textArea = document.createElement("textarea");
+                    textArea.value = shareUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    window.showToastMessage('Tautan produk berhasil disalin!');
+                }
+            } catch (err) {
+                console.error('Batal membagikan:', err);
+            }
         }
 
         window.filterCategory = function(catName) {
