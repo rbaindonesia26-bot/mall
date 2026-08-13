@@ -145,7 +145,7 @@
         window.currentView = 'home';
         window.userId = null; 
         window.userEmail = "";
-        window.isAdmin = false; // Status Admin
+        window.isAdmin = false; 
         window.isAddingProduct = false; 
         window.isEditingProfile = false; 
         window.isEditingBuyerProfile = false; 
@@ -164,7 +164,7 @@
 
         window.tempUploadedAvatar = '';
         window.tempProductImg = '';
-        window.tempBannerImg = ''; // Untuk Dasbor Admin
+        window.tempBannerImg = ''; 
         
         window.currentSearchQuery = '';
         window.currentCategoryFilter = 'Semua';
@@ -176,19 +176,18 @@
         window.myOrders = [];
         window.incomingOrders = [];
         window.reviews = [];
-        window.firestoreBanners = []; // Menyimpan banner dari database
+        window.firestoreBanners = [];
         window.toastTimeout = null;
         const appId = 'suqna-v1';
 
-        // Banner Default (Jika database kosong)
+        // Banner Default
         window.defaultBanners = [
             { tag: "TETANGGAKU", tagColor: "text-[#00c98f]", title: "Sayur Segar<br>Tiap Pagi", img: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800" },
             { tag: "PROMO BERKAH", tagColor: "text-amber-400", title: "Kurma Ajwa<br>Diskon 30%", img: "https://images.unsplash.com/photo-1589539148230-0a5b707bc77c?auto=format&fit=crop&q=80&w=800" },
             { tag: "PROPERTI", tagColor: "text-blue-400", title: "Rumah Idaman<br>Keluarga", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" }
         ];
-        // Banner yang sedang aktif ditampilkan
-        window.banners = [...window.defaultBanners]; 
         
+        window.banners = [...window.defaultBanners]; 
         window.currentBannerIndex = 0;
         window.bannerInterval = null;
 
@@ -223,14 +222,13 @@
             "Lainnya": ["Lain-lain / Umum"]
         };
 
-        // Fetch Banners dari Database
+        // Fetch Banners
         const bannersQuery = query(collection(db, 'artifacts', appId, 'public', 'data', 'banners'));
         onSnapshot(bannersQuery, (snapshot) => {
             window.firestoreBanners = [];
             snapshot.forEach((doc) => { window.firestoreBanners.push({ id: doc.id, ...doc.data() }); });
             
             if (window.firestoreBanners.length > 0) {
-                // Urutkan berdasarkan waktu tambah
                 window.firestoreBanners.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
                 window.banners = window.firestoreBanners;
             } else {
@@ -258,9 +256,7 @@
             if (user) {
                 window.userId = user.uid;
                 window.userEmail = user.email;
-                // Cek jika yang login adalah Admin (Lebih aman, abaikan huruf besar/kecil & titik)
-                const cleanEmail = user.email ? user.email.toLowerCase() : '';
-                window.isAdmin = (cleanEmail === 'rba.indonesia26@gmail.com' || cleanEmail === 'rbaindonesia26@gmail.com');
+                window.isAdmin = (user.email === 'rba.indonesia26@gmail.com');
                 
                 const storeRef = doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'store_info');
                 onSnapshot(storeRef, (docSnap) => {
@@ -551,32 +547,6 @@
                 <div class="mt-2 pt-6 border-t-8 border-gray-50">
                     <div class="px-5 flex justify-between items-end mb-4">
                         <div>
-                            <h2 class="font-black text-gray-900 text-lg flex items-center gap-1.5"><i data-lucide="tag" class="w-5 h-5 text-purple-500 fill-purple-100"></i> Promo Menarik</h2>
-                            <p class="text-[11px] text-gray-500 font-medium mt-0.5">Diskon & penawaran hari ini</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 overflow-x-auto hide-scroll pb-5 px-5 snap-x snap-mandatory">
-                        ${popProducts.slice(0, 2).map(p => `
-                            <div onclick="window.openProductDetail('${p.id}')" class="min-w-[240px] bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border border-purple-100 p-3 shadow-sm flex gap-3 snap-start cursor-pointer">
-                                <img src="${p.imgUrl}" class="w-16 h-16 rounded-xl object-cover shadow-sm">
-                                <div class="flex flex-col justify-center">
-                                    <span class="text-[9px] bg-rose-500 text-white px-1.5 py-0.5 rounded uppercase font-black w-max mb-1">-20% OFF</span>
-                                    <h4 class="font-bold text-xs text-gray-900 line-clamp-1 mb-0.5">${p.name}</h4>
-                                    <div class="flex items-center gap-1.5">
-                                        <p class="text-[#009669] font-black text-sm">Rp ${(p.price * 0.8).toLocaleString('id-ID')}</p>
-                                        <p class="text-[10px] text-gray-400 line-through font-medium">Rp ${p.price.toLocaleString('id-ID')}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-
-            html += `
-                <div class="mt-2 pt-6 border-t-8 border-gray-50">
-                    <div class="px-5 flex justify-between items-end mb-4">
-                        <div>
                             <h2 class="font-black text-gray-900 text-lg flex items-center gap-1.5"><i data-lucide="sparkles" class="w-5 h-5 text-emerald-500 fill-emerald-100"></i> Baru Ditambahkan</h2>
                             <p class="text-[11px] text-gray-500 font-medium mt-0.5">Produk & jasa terbaru di SUQNA</p>
                         </div>
@@ -606,7 +576,6 @@
         }
 
         window.renderHome = function() {
-            // Pengaman index jika banner berubah
             if (window.currentBannerIndex >= window.banners.length) {
                 window.currentBannerIndex = 0;
             }
@@ -825,7 +794,7 @@
         }
 
         window.renderAdminDashboard = function() {
-            if (!window.isAdmin) return ''; // Keamanan ganda
+            if (!window.isAdmin) return ''; 
 
             let isAddingBanner = window.tempBannerImg !== '';
 
@@ -1094,8 +1063,8 @@
                         <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 shadow-sm">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-black">${r.reviewerName.charAt(0).toUpperCase()}</div>
-                                    <span class="text-xs font-bold text-gray-800">${r.reviewerName}</span>
+                                    <div class="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-black">${(r.reviewerName || 'A').charAt(0).toUpperCase()}</div>
+                                    <span class="text-xs font-bold text-gray-800">${r.reviewerName || 'Anonim'}</span>
                                 </div>
                                 <div class="flex gap-0.5">
                                     ${Array(5).fill(0).map((_,i) => `<i data-lucide="star" class="w-3.5 h-3.5 ${i < r.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}"></i>`).join('')}
@@ -1313,9 +1282,12 @@
         }
 
         window.deleteBanner = async function(id) {
-            if(confirm("Apakah Anda yakin ingin menghapus banner ini?")) {
+            try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'banners', id));
-                window.showToastMessage('Banner Dihapus');
+                window.showToastMessage('Banner berhasil dihapus!');
+            } catch(e) {
+                console.error(e);
+                window.showToastMessage('Gagal menghapus banner.');
             }
         }
 
@@ -1351,9 +1323,11 @@
         }
 
         window.deleteProduct = async function(id) {
-            if(confirm("Yakin ingin menghapus barang ini?")) {
+            try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
                 window.showToastMessage('Barang Dihapus');
+            } catch (e) {
+                console.error(e);
             }
         }
 
@@ -1392,7 +1366,6 @@
             }
         }
 
-        // Auth Logic
         window.processLogin = async function() {
             const e = document.getElementById('auth-email').value;
             const p = document.getElementById('auth-password').value;
@@ -1418,11 +1391,8 @@
                 await signInWithPopup(auth, googleProvider);
                 window.navigate('account');
             } catch(err) {
-                if (err.code === 'auth/unauthorized-domain') {
-                    window.showModal('Blokir Keamanan', `Domain belum diotorisasi di Firebase Console.`);
-                } else {
-                    window.showToastMessage('Gagal masuk dengan Google.');
-                }
+                console.error(err);
+                window.showToastMessage('Gagal masuk dengan Google.');
             }
         }
 
@@ -1449,49 +1419,42 @@
             }
         }
 
-        // Base64 Image Handler (Dengan Kompresi Otomatis)
+        // Image Compressor Otomatis
         window.handleImageBase64 = function(event, callback) {
             const file = event.target.files[0];
             if(!file) return;
-
-            // Jika file bukan gambar, tolak
-            if(!file.type.startsWith('image/')) {
-                window.showToastMessage('Harap unggah file gambar!');
-                return;
-            }
-
+            
             const reader = new FileReader();
+            reader.readAsDataURL(file);
             reader.onload = function(e) {
                 const img = new Image();
+                img.src = e.target.result;
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
                     let width = img.width;
                     let height = img.height;
-                    
-                    // Batasi ukuran maksimal gambar (Maksimal resolusi 800px)
-                    const MAX_SIZE = 800;
-                    if (width > MAX_SIZE || height > MAX_SIZE) {
-                        if (width > height) {
-                            height *= MAX_SIZE / width;
-                            width = MAX_SIZE;
-                        } else {
-                            width *= MAX_SIZE / height;
-                            height = MAX_SIZE;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
                         }
                     }
-                    
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Kompres menjadi format JPEG dengan kualitas 70% agar sangat ringan
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    callback(compressedDataUrl);
-                };
-                img.src = e.target.result;
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Kompres Kualitas JPEG 70%
+                    callback(dataUrl);
+                }
             };
-            reader.readAsDataURL(file);
         }
 
         window.showToastMessage = function(m) {
@@ -1590,8 +1553,10 @@
                 }
             }, 3500);
         }
+        
         window.stopBannerSlide = function() { clearInterval(window.bannerInterval); }
         
+        // Render Awal
         window.render();
     </script>
 </body>
