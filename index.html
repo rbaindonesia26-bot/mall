@@ -178,13 +178,21 @@
         window.reviews = [];
         window.firestoreBanners = [];
         window.toastTimeout = null;
-        const appId = 'suqna-v2';
+        const appId = 'suqna-v2'; // MENGGUNAKAN DATABASE BARU (BERSIH DARI XSS)
 
-        // Banner Default
+        // Sistem Anti-Virus (Mencegah Script Jahat / XSS)
+        window.sanitizeHTML = function(str) {
+            if(!str) return '';
+            return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&lt;br&gt;/gi, '<br>');
+        };
+
+        // Banner Default (5 Banner termasuk Maintenance)
         window.defaultBanners = [
-            { tag: "TETANGGAKU", tagColor: "text-[#00c98f]", title: "Sayur Segar<br>Tiap Pagi", img: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800" },
-            { tag: "PROMO BERKAH", tagColor: "text-amber-400", title: "Kurma Ajwa<br>Diskon 30%", img: "https://images.unsplash.com/photo-1589539148230-0a5b707bc77c?auto=format&fit=crop&q=80&w=800" },
-            { tag: "PROPERTI", tagColor: "text-blue-400", title: "Rumah Idaman<br>Keluarga", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" }
+            { tag: "PENGUMUMAN PENTING", tagColor: "text-rose-500", title: "Mohon Maaf,<br>Sistem Baru Diperbarui", img: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=800" },
+            { tag: "GRAND LAUNCHING", tagColor: "text-[#00c98f]", title: "Selamat Datang di<br>Pasar Digital Kita", img: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800" },
+            { tag: "PROMO BERKAH", tagColor: "text-amber-400", title: "Buka Toko Gratis<br>Sekarang Juga!", img: "https://images.unsplash.com/photo-1589539148230-0a5b707bc77c?auto=format&fit=crop&q=80&w=800" },
+            { tag: "TRANSAKSI MUDAH", tagColor: "text-blue-400", title: "Checkout Langsung<br>ke WhatsApp Penjual", img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=800" },
+            { tag: "EKONOMI UMAT", tagColor: "text-emerald-400", title: "Dukung Usaha Tetangga<br>Belanja dari Rumah", img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800" }
         ];
         
         window.banners = [...window.defaultBanners]; 
@@ -598,8 +606,8 @@
                     <div class="mt-6 relative h-[140px] rounded-2xl overflow-hidden shadow-2xl group cursor-pointer border-2 border-white/10" id="banner-container">
                         <img id="banner-img" src="${b.img}" class="w-full h-full object-cover transition-all duration-500" />
                         <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex flex-col justify-center px-5">
-                            <span id="banner-tag" class="${b.tagColor} font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md transition-opacity duration-300">${b.tag}</span>
-                            <h3 id="banner-title" class="text-white font-extrabold text-2xl leading-[1.15] drop-shadow-lg transition-opacity duration-300">${b.title}</h3>
+                            <span id="banner-tag" class="${b.tagColor} font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md transition-opacity duration-300">${window.sanitizeHTML(b.tag)}</span>
+                            <h3 id="banner-title" class="text-white font-extrabold text-2xl leading-[1.15] drop-shadow-lg transition-opacity duration-300">${window.sanitizeHTML(b.title)}</h3>
                         </div>
                     </div>
                 </div>
@@ -856,8 +864,8 @@
                                 <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100 relative">
                                     <img src="${b.img}" class="w-20 h-14 object-cover rounded-xl shadow-sm">
                                     <div class="flex-1">
-                                        <span class="${b.tagColor} font-black text-[9px] uppercase">${b.tag}</span>
-                                        <p class="text-xs font-bold text-gray-800 leading-tight" style="white-space: pre-wrap;">${b.title.replace('<br>', ' ')}</p>
+                                        <span class="${b.tagColor} font-black text-[9px] uppercase">${window.sanitizeHTML(b.tag)}</span>
+                                        <p class="text-xs font-bold text-gray-800 leading-tight" style="white-space: pre-wrap;">${window.sanitizeHTML(b.title).replace(/<br>/g, ' ')}</p>
                                     </div>
                                     <button onclick="window.deleteBanner('${b.id}')" class="w-8 h-8 bg-white border border-red-100 text-red-500 rounded-full flex items-center justify-center hover:bg-red-50 shadow-sm"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                                 </div>
@@ -1545,8 +1553,8 @@
                     if(img) {
                         img.style.opacity = 0;
                         setTimeout(() => { 
-                            img.src = b.img; title.innerHTML = b.title; 
-                            tag.innerHTML = b.tag; tag.className = `${b.tagColor} font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md transition-opacity duration-300`;
+                            img.src = b.img; title.innerHTML = window.sanitizeHTML(b.title); 
+                            tag.innerHTML = window.sanitizeHTML(b.tag); tag.className = `${b.tagColor} font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md transition-opacity duration-300`;
                             img.style.opacity = 1; 
                         }, 300);
                     }
