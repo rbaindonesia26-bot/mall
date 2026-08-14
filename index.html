@@ -550,6 +550,9 @@
             window.closeConfirmModal();
         });
 
+        // ---------------------------------------------------------
+        // FUNGSI ADMIN: HAPUS PRODUK
+        // ---------------------------------------------------------
         window.deleteProductAdmin = function(id) {
             window.showConfirmModal(
                 'Hapus Produk (Admin)', 
@@ -560,6 +563,36 @@
                         window.showToastMessage('Produk dihapus oleh Admin'); 
                         if(window.currentView === 'detail') window.navigate('home');
                     } catch (e) { console.error(e); }
+                }
+            );
+        }
+
+        // ---------------------------------------------------------
+        // FUNGSI SUPER ADMIN: TUTUP PAKSA TOKO (BANNED)
+        // ---------------------------------------------------------
+        window.forceCloseStoreAdmin = function(storeOwnerId) {
+            window.showConfirmModal(
+                'TUTUP PAKSA TOKO (SUPER ADMIN)', 
+                'TINDAKAN FATAL! Ini akan menghapus profil toko dan SEMUA produk dari penjual ini selamanya. Lanjutkan?',
+                async () => {
+                    try {
+                        // 1. Hapus Profil Toko
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', storeOwnerId, 'profile', 'store_info'));
+                        
+                        // 2. Cari semua produk milik toko ini
+                        const storeProducts = window.products.filter(p => p.ownerId === storeOwnerId);
+                        
+                        // 3. Hapus semua produknya satu per satu
+                        for (let prod of storeProducts) {
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', prod.id));
+                        }
+                        
+                        window.showToastMessage(`Toko ditutup paksa. ${storeProducts.length} produk dihapus.`);
+                        window.navigate('home'); // Kembali ke beranda setelah menghapus
+                    } catch (e) { 
+                        console.error(e); 
+                        window.showToastMessage('Gagal menutup toko.'); 
+                    }
                 }
             );
         }
@@ -612,7 +645,8 @@
             const ratingHtml = prodReviews.length > 0 ? `<div class="flex items-center gap-1 bg-amber-50 px-1.5 py-0.5 rounded text-[9px] font-bold text-amber-600 border border-amber-100 shadow-sm"><i data-lucide="star" class="w-2.5 h-2.5 fill-amber-500 text-amber-500"></i> ${avgRating}</div>` : '';
             const isOutOfStock = p.stock === 0;
             
-            const adminDeleteBtn = window.isAdmin ? `<button onclick="event.stopPropagation(); window.deleteProductAdmin('${p.id}')" class="absolute top-2 right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-red-600 transition-colors z-20 tooltip" title="Admin Hapus"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
+            // TOMBOL HAPUS BARANG (HANYA ADMIN)
+            const adminDeleteBtn = window.isAdmin ? `<button onclick="event.stopPropagation(); window.deleteProductAdmin('${p.id}')" class="absolute top-2 right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-red-600 transition-colors z-20 tooltip" title="Admin Hapus Barang"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
 
             return `
                 <div onclick="window.openProductDetail('${p.id}')" class="min-w-[150px] w-[150px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative cursor-pointer snap-start hover:shadow-md transition-shadow">
@@ -722,11 +756,20 @@
             const storeReviews = window.reviews.filter(r => storeProducts.some(p => p.id === r.productId));
             const storeAvgRating = storeReviews.length > 0 ? (storeReviews.reduce((sum, r) => sum + r.rating, 0) / storeReviews.length).toFixed(1) : 'Belum Ada';
 
+            // TOMBOL HAPUS TOKO KHUSUS SUPER ADMIN
+            const forceCloseBtn = window.isAdmin ? 
+                `<button onclick="window.forceCloseStoreAdmin('${window.currentStoreId}')" class="absolute top-6 right-5 w-10 h-10 bg-red-500/90 backdrop-blur rounded-full flex items-center justify-center text-white shadow-lg border-2 border-red-400 hover:bg-red-600 transition-colors z-20 tooltip" title="Tutup Paksa Toko">
+                    <i data-lucide="skull" class="w-5 h-5"></i>
+                </button>` : '';
+
             return `
                 <div class="bg-gradient-to-b from-[#4c1d95] to-[#5b21b6] pt-8 pb-10 px-5 rounded-b-[2.5rem] shadow-xl relative z-10">
                     <button onclick="window.navigate('home')" class="absolute top-6 left-5 w-10 h-10 bg-white/10 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors z-20">
                         <i data-lucide="arrow-left" class="w-5 h-5"></i>
                     </button>
+                    
+                    ${forceCloseBtn}
+
                     <div class="flex flex-col items-center mt-6 text-center">
                         <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-purple-700 overflow-hidden mb-3">
                             <span class="text-gray-900 text-3xl font-black uppercase">${storeName.charAt(0)}</span>
@@ -920,8 +963,8 @@
             
             let html = `
                 <div class="bg-gradient-to-b from-[#4c1d95] to-[#5b21b6] pt-6 pb-8 px-5 rounded-b-[2.5rem] shadow-md relative z-10">
-                    <div class="flex items-center justify-center mx-auto mt-2 mb-2 h-24 sm:h-28 relative z-10">
-                        <img src="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png" alt="SUQNA Logo" class="h-full w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300">
+                    <div class="flex items-center justify-center mx-auto mt-2 mb-2 h-24 relative z-10 w-full overflow-hidden">
+                        <img src="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png" alt="SUQNA Logo" class="h-full w-auto max-w-[85%] object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300">
                     </div>
 
                     <div class="mt-6 flex items-center gap-2">
@@ -1182,7 +1225,7 @@
                                 
                                 <div class="flex gap-2 pt-2">
                                     <button onclick="window.tempBannerImg = ''; window.editingBannerId = null; window.render();" class="flex-1 bg-white border border-gray-300 text-gray-600 font-extrabold py-3 rounded-xl">Batal</button>
-                                    <button onclick="window.saveNewBanner()" class="flex-1 bg-purple-600 text-white font-extrabold py-3 rounded-xl shadow-md hover:bg-purple-700">${window.editingBannerId ? 'Update Banner' : 'Simpan Banner'}</button>
+                                    <button onclick="window.saveNewBanner()" class="flex-1 bg-purple-600 text-white font-extrabold py-3 rounded-xl shadow-md hover:bg-purple-700" id="btn-simpan-banner">${window.editingBannerId ? 'Update Banner' : 'Simpan Banner'}</button>
                                 </div>
                             </div>
                         ` : ''}
@@ -1199,9 +1242,14 @@
                                         <p class="text-xs font-bold text-gray-800 leading-tight" style="white-space: pre-wrap;">${window.sanitizeHTML(b.title).replace(/<br>/g, ' ')}</p>
                                     </div>
                                     <div class="flex gap-2">
-                                        <!-- Tombol Edit -->
-                                        <button onclick="window.editBanner('${b.id}', '${b.tag}', '${b.tagColor}', '${b.title.replace(/'/g, "\\'")}', '${b.img}')" class="w-8 h-8 bg-blue-50 border border-blue-100 text-blue-500 rounded-full flex items-center justify-center hover:bg-blue-100 shadow-sm"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                                        <!-- Tombol Hapus -->
+                                        <!-- Tombol Edit (Pena) -->
+                                        <button onclick="window.editBanner('${b.id}', '${b.tag}', '${b.tagColor}', '${b.title.replace(/'/g, "\\'")}', '${b.img}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors flex items-center justify-center border border-blue-100 mr-2" title="Edit Banner">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                            </svg>
+                                        </button>
+                                        <!-- Tombol Hapus (Tong Sampah) -->
                                         <button onclick="window.deleteBanner('${b.id}')" class="w-8 h-8 bg-red-50 border border-red-100 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 shadow-sm"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                                     </div>
                                 </div>
@@ -1606,15 +1654,27 @@
 
         // Fungsi "Lihat Semua"
         window.lihatKategori = function(tipe) {
-            if (window.currentView !== 'home') window.navigate('home');
+            // 1. Pastikan pengguna berada di halaman Beranda
+            if (window.currentView !== 'home') {
+                window.navigate('home');
+            }
+
+            // 2. Beri jeda sejenak agar halaman siap, lalu lakukan filter
             setTimeout(() => {
                 const selectUrutkan = document.getElementById('sort-produk');
                 const bagianProduk = document.getElementById('daftar-produk-container') || document.body;
+                
+                // Gulir layar otomatis ke bagian produk
                 bagianProduk.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
+                // Ubah filter sesuai tombol yang diklik
                 if (selectUrutkan) {
-                    if (tipe === 'populer') selectUrutkan.value = 'rating';
-                    else if (tipe === 'terbaru') selectUrutkan.value = 'terbaru';
+                    if (tipe === 'populer') {
+                        selectUrutkan.value = 'rating'; // Urutkan rating tertinggi
+                    } else if (tipe === 'terbaru') {
+                        selectUrutkan.value = 'terbaru'; // Urutkan paling baru
+                    }
+                    // Jalankan ulang tampilan produk
                     selectUrutkan.dispatchEvent(new Event('change'));
                 }
             }, 100);
@@ -1822,26 +1882,23 @@
                     window.showToastMessage('Banner Berhasil Ditambahkan!');
                 }
                 
-                window.tempBannerImg = ''; window.render();
-            } catch(e) { window.showToastMessage('Gagal menyimpan banner.'); }
+                document.getElementById('new-banner-tag').value = '';
+                document.getElementById('new-banner-title').value = '';
+                window.tempBannerImg = ''; 
+                window.render();
+            } catch(e) { console.error(e); window.showToastMessage('Gagal menyimpan banner.'); }
         }
 
         window.editBanner = function(id, tag, color, title, img) {
             window.editingBannerId = id;
-            window.tempBannerImg = img;
-            window.render(); // Merender form di layar admin
             
-            setTimeout(() => {
-                const tagInput = document.getElementById('new-banner-tag');
-                if (tagInput) {
-                    tagInput.value = tag;
-                    document.getElementById('new-banner-color').value = color;
-                    document.getElementById('new-banner-title').value = title;
-                    
-                    window.showToastMessage('Mode Edit Aktif.');
-                    document.getElementById('banner-img-upload').parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 50);
+            document.getElementById('new-banner-tag').value = tag;
+            document.getElementById('new-banner-color').value = color;
+            document.getElementById('new-banner-title').value = title;
+            window.tempBannerImg = img;
+            
+            window.showToastMessage('Mode Edit. Silakan ubah data, lalu tekan Update.');
+            document.getElementById('form-tambah-banner').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         window.deleteBanner = async function(id) {
