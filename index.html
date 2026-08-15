@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#5b21b6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png">
     <title>SUQNA - Pasar Kita, Untuk Semua</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -208,6 +213,21 @@
                 <span class="text-[10px] font-medium text-gray-400">Akun</span>
             </button>
         </nav>
+    </div>
+
+    <!-- PWA Installation Prompt (Optional, hidden by default) -->
+    <div id="install-prompt" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-gray-900 text-white p-4 rounded-2xl shadow-2xl z-[150] flex items-center justify-between transition-transform translate-y-full">
+        <div class="flex items-center gap-3">
+            <img src="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png" class="w-10 h-10 object-contain bg-white rounded-lg p-1">
+            <div>
+                <p class="font-bold text-sm leading-tight">Install SUQNA</p>
+                <p class="text-[10px] text-gray-300">Akses lebih cepat & mudah</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('install-prompt').classList.add('translate-y-full'); setTimeout(() => document.getElementById('install-prompt').classList.add('hidden'), 300);" class="text-xs text-gray-400 font-bold px-2 py-1">Nanti</button>
+            <button id="btn-install" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-black px-4 py-2 rounded-xl shadow-md">Install</button>
+        </div>
     </div>
 
     <script type="module">
@@ -2097,6 +2117,54 @@
         
         window.stopBannerSlide = function() { clearInterval(window.bannerInterval); }
         
+        // PWA Registration & Install Logic
+        let deferredPrompt;
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker terdaftar sukses:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker gagal mendaftar:', error);
+                    });
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Mencegah Chrome 67 atau lebih rendah agar tidak menampilkan prompt otomatis
+            e.preventDefault();
+            // Simpan event agar bisa dipicu nanti
+            deferredPrompt = e;
+            
+            // Tampilkan prompt custom kita (opsional, bisa dimatikan jika mengganggu)
+            const promptEl = document.getElementById('install-prompt');
+            promptEl.classList.remove('hidden');
+            setTimeout(() => promptEl.classList.remove('translate-y-full'), 100);
+        });
+
+        document.getElementById('btn-install')?.addEventListener('click', async () => {
+            const promptEl = document.getElementById('install-prompt');
+            promptEl.classList.add('translate-y-full');
+            setTimeout(() => promptEl.classList.add('hidden'), 300);
+
+            if (deferredPrompt) {
+                // Tampilkan prompt instalasi bawaan browser
+                deferredPrompt.prompt();
+                // Tunggu respon pengguna
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Pengguna memilih ${outcome} pada prompt instalasi`);
+                // deferredPrompt hanya bisa dipakai sekali
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('Aplikasi SUQNA berhasil di-install');
+            deferredPrompt = null;
+        });
+
         // Memulai Aplikasi
         window.render();
     </script>
