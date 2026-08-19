@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 1. JUDUL & DESKRIPSI TOKO -->
+    <title>Nur Shop - SUQNA</title>
+    <meta property="og:title" content="emas antam - SUQNA">
+    <meta property="og:description" content="Investasi Logam Mulia Terpercaya, Aman & Halal.">
+    
+    <!-- 2. LINK GAMBAR PREVIEW WA -->
+    <meta property="og:image" content="https://cdn.phototourl.com/member/2026-08-19-119f53c6-6fa5-4a0e-877a-1e9161e1e8ba.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <script>
+        // 3. ID TOKO NUR SHOP (SUDAH DIMASUKKAN)
+        window.location.replace("https://rbaindonesia26-bot.github.io/mall/?product=cSlGNus1VGPr8eAVlibr");
+    </script>
+</head>
+<body>
+    <!-- Teks ini hanya terlihat sepersekian detik sebelum pembeli dilempar ke aplikasi -->
+    <div style="text-align: center; margin-top: 20vh; font-family: sans-serif;">
+        <h2 style="color: #6b21a8;">Membuka Etalase Toko...</h2>
+        <p>Mohon tunggu sebentar.</p>
+    </div>
+</body>
+</html>
