@@ -477,7 +477,8 @@
             window.firestoreBanners = [];
             snapshot.forEach((doc) => { window.firestoreBanners.push({ id: doc.id, ...doc.data() }); });
             if (window.firestoreBanners.length > 0) {
-                window.firestoreBanners.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+                window.firestoreBanners.sort((a,b) => (a.order || 99) - (b.order || 99));                
                 window.banners = window.firestoreBanners;
             } else {
                 window.banners = [...window.defaultBanners];
