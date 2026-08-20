@@ -2282,12 +2282,12 @@
             const tag = document.getElementById('new-banner-tag').value;
             const color = document.getElementById('new-banner-color').value;
             const title = document.getElementById('new-banner-title').value;
+            const orderNumber = Number(document.getElementById('new-banner-order').value) || 99;
 
             if(!window.tempBannerImg || !tag || !title) return window.showToastMessage('Isi gambar, label promo, dan judul!');
 
             try {
-                const b = { tag: tag, tagColor: color, title: title, img: window.tempBannerImg, timestamp: Date.now() };
-                
+const b = { tag: tag, tagColor: color, title: title, img: window.tempBannerImg, timestamp: Date.now(), order: orderNumber };                
                 if (window.editingBannerId) {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'banners', window.editingBannerId), b);
                     window.showToastMessage('Banner Berhasil Diperbarui!');
@@ -2299,6 +2299,7 @@
                 
                 if(document.getElementById('new-banner-tag')) document.getElementById('new-banner-tag').value = '';
                 if(document.getElementById('new-banner-title')) document.getElementById('new-banner-title').value = '';
+                if(document.getElementById('new-banner-order')) document.getElementById('new-banner-order').value = '';
                 window.tempBannerImg = ''; 
                 window.render(); 
             } catch(e) { 
