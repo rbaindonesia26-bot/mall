@@ -225,7 +225,7 @@
 
         <!-- Modal Tentang SUQNA -->
         <div id="about-modal" class="hidden absolute inset-0 bg-black/60 z-[120] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-            <div class="bg-white rounded-[2rem] p-7 max-w-[85%] sm:max-w-md w-full text-center shadow-2xl transform scale-100 transition-transform slide-up relative overflow-hidden">
+            <div class="bg-white rounded-[2rem] p-7 max-w-[85%] sm:max-w-md w-full text-center shadow-2xl transform scale-100 transition-transform slide-up relative overflow-y-auto max-h-[90vh]">
                 <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-600 to-indigo-600"></div>
                 <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-purple-100 shadow-inner">
                     <i data-lucide="heart-handshake" class="w-8 h-8"></i>
@@ -235,6 +235,38 @@
                     SUQNA adalah ekosistem pasar digital syariah yang didedikasikan untuk memberdayakan UMKM lokal. 
                     <br><br>Kami hadir untuk menciptakan ruang belanja yang aman, bebas biaya admin, dan 100% transparan agar uang langsung masuk ke penjual.<br><b>Pasar Kita, Untuk Semua.</b>
                 </p>
+                <!-- VISI & MISI SUQNA -->
+<div class="mt-6 text-left border-t border-purple-100 pt-4">
+    <div class="mb-4">
+        <h3 class="text-base font-bold text-purple-700 flex items-center gap-2">
+            <i data-lucide="target" class="w-4 h-4"></i> Visi SUQNA
+        </h3>
+        <p class="text-sm text-gray-600 mt-1 italic leading-relaxed border-l-4 border-purple-500 pl-3 bg-purple-50 p-2 rounded-r-md">
+            "Menjadi ekosistem pasar digital syariah terpercaya yang memberdayakan ekonomi umat, di mana setiap transaksi menghadirkan rasa aman, keadilan, dan keberkahan bagi semua."
+        </p>
+    </div>
+    
+    <div>
+        <h3 class="text-base font-bold text-purple-700 flex items-center gap-2 mb-2">
+            <i data-lucide="list-checks" class="w-4 h-4"></i> Misi SUQNA
+        </h3>
+        <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0"></div>
+                <span><strong>100% Halal & Syariah:</strong> Menyediakan wadah jual beli yang menyeleksi kehalalan produk dan memfasilitasi transaksi sesuai syariat.</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0"></div>
+                <span><strong>Aman & Nyaman:</strong> Membangun platform aplikasi yang cepat, transparan, dan mudah digunakan untuk belanja harian hingga aset logam mulia.</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0"></div>
+                <span><strong>Kemandirian Ekonomi:</strong> Menjadi mitra teknologi ramah UMKM untuk menjangkau pasar lebih luas dengan prinsip perdagangan yang adil dan amanah.</span>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- END VISI & MISI -->
                 <button onclick="window.closeAboutModal()" class="w-full bg-gray-100 text-gray-800 font-extrabold py-3.5 rounded-2xl hover:bg-gray-200 transition-colors border border-gray-200">
                     Tutup
                 </button>
@@ -1542,6 +1574,12 @@ window.defaultBanners = [];
                         <!-- Logo -->
                         <div class="flex items-center justify-center md:justify-start h-12 md:h-14 relative z-10 shrink-0 md:mt-1">
                             <img src="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png" alt="SUQNA Logo" class="h-full w-auto max-w-[85%] md:max-w-[200px] object-contain scale-105 transition-transform duration-300 logo-glow">
+                            <!-- Tombol Bahasa Khusus HP -->
+<div class="absolute right-0 md:hidden z-20">
+    <span onclick="window.open('https://translate.google.com/translate?sl=id&tl=en&u=' + window.location.href, '_blank')" class="flex items-center justify-center gap-1.5 cursor-pointer text-white bg-white/10 px-2.5 py-1.5 rounded-lg border border-white/20 backdrop-blur-sm text-[10px] font-medium shadow-sm hover:bg-white/20 transition-all">
+        <i data-lucide="globe" class="w-3.5 h-3.5"></i> ID / EN
+    </span>
+</div>
                         </div>
 
                         <!-- Search Bar & Tags -->
