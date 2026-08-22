@@ -2660,5 +2660,36 @@ const b = { tag: tag, tagColor: color, title: title, img: window.tempBannerImg, 
         // Memulai Aplikasi
         window.render();
     </script>
+    // Memulai Aplikasi
+        window.render();
+      </script>
+
+      <!-- SENSOR PENYEMBUNYI PITA OTOMATIS -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const areaScroll = document.getElementById('content');
+          const pita = document.querySelector('.pita-kemerdekaan');
+
+          if (areaScroll && pita) {
+            // Tambahkan efek memudar yang halus (elegan)
+            pita.style.transition = 'opacity 0.3s ease-in-out';
+
+            areaScroll.addEventListener('scroll', function() {
+              // Jika layar di-scroll lebih dari 50px ke bawah, pita menghilang
+              if (areaScroll.scrollTop > 50) {
+                pita.style.opacity = '0';
+                pita.style.pointerEvents = 'none'; // Agar tidak bisa diklik saat hilang
+              } else {
+                // Jika layar kembali ke paling atas, pita muncul lagi
+                pita.style.opacity = '1';
+                pita.style.pointerEvents = 'auto'; // Kembalikan agar bisa diklik
+              }
+            });
+          }
+        });
+      </script>
+
+    </body>
+</html>
 </body>
 </html>
