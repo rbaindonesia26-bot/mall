@@ -2402,15 +2402,25 @@ window.shareProduct = async function(id) {
         const flashSaleEndVal = document.getElementById('new-prod-flashsale-end') ? document.getElementById('new-prod-flashsale-end').value : '';
 
         // Memasukkan data ke dalam Keranjang Database
-        const p = {
-            name: name, price: price, originalPrice: originalPrice, stock: stock, category: subcat, description: desc,
-            storeName: window.storeProfile.name, storePhone: window.storeProfile.phone || '',
-            ownerId: window.userId, imgUrl: finalImgUrl,
-            hasVariants: useVariants, variants: finalVariants,
-            timestamp: window.editingProductData ? window.editingProductData.timestamp : Date.now(),
-            isFlashSale: isFlashSaleVal,
-            flashSaleEnd: flashSaleEndVal
-        };                
+const p = {
+        name: name, 
+        price: price, 
+        originalPrice: originalPrice, 
+        stock: stock, 
+        category: subcat, 
+        description: desc,
+        storeName: window.storeProfile.name, 
+        storePhone: window.storeProfile.phone || '',
+        ownerId: window.userId, 
+        imgUrl: finalImgUrl,
+        gallery: window.tempGalleryArray || [finalImgUrl],
+        videoUrl: window.tempVideoUrl || '',
+        hasVariants: useVariants, 
+        variants: finalVariants,
+        timestamp: window.editingProductData ? window.editingProductData.timestamp : Date.now(),
+        isFlashSale: isFlashSaleVal,
+        flashSaleEnd: flashSaleEndVal
+    };
                 if (window.editingProductData) {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', window.editingProductData.id), p);
                     window.showToastMessage('Barang Diperbarui');
