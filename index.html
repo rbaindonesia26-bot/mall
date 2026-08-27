@@ -2668,11 +2668,40 @@ const b = { tag: tag, tagColor: color, title: title, img: window.tempBannerImg, 
             if(!window.isAdmin) return;
             window.showToastMessage('Menyuntikkan data...');
             try {
-                const arr = [
-                    { name: "Mini Gold 0.1 Gram", price: 145000, originalPrice: 155000, stock: 50, category: "Logam Mulia & Emas", description: "Emas batangan murni 24 Karat.", imgUrl: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&q=80&w=800" },
-                    { name: "Kopi Susu Gula Aren Premium", price: 75000, originalPrice: 85000, stock: 20, category: "Minuman Segar", description: "Kopi literan segar, simpan di kulkas.", imgUrl: "https://images.unsplash.com/photo-1559525839-b184a4d698c7?auto=format&fit=crop&q=80&w=800" },
-                    { name: "Baju Koko Kurta Modern", price: 120000, originalPrice: 150000, stock: 30, category: "Fashion & Busana", description: "Bahan Katun Toyobo asli, adem.", imgUrl: "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?auto=format&fit=crop&q=80&w=800" }
-                ];
+const arr = [
+                { 
+                    name: "Mini Gold 0.1 Gram", price: 145000, originalPrice: 155000, stock: 50, category: "Logam Mulia & Emas", description: "Emas batangan murni 24 Karat.", 
+                    imgUrl: "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=500&q=80",
+                    gallery: [
+                        "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=500&q=80",
+                        "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=500&q=80",
+                        "https://images.unsplash.com/photo-1574844391264-b04e6c382103?w=500&q=80"
+                    ],
+                    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+                    isDummy: true
+                },
+                { 
+                    name: "Kopi Susu Gula Aren Premium", price: 75000, originalPrice: 85000, stock: 20, category: "Minuman Segar", description: "Kopi literan segar, simpan di kulkas.", 
+                    imgUrl: "https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=500&q=80",
+                    gallery: [
+                        "https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=500&q=80",
+                        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80",
+                        "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=500&q=80"
+                    ],
+                    videoUrl: "",
+                    isDummy: true
+                },
+                { 
+                    name: "Baju Koko Kurta Modern", price: 120000, originalPrice: 150000, stock: 30, category: "Fashion & Busana", description: "Bahan Katun Toyobo asli, adem.", 
+                    imgUrl: "https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=500&q=80",
+                    gallery: [
+                        "https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=500&q=80",
+                        "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80"
+                    ],
+                    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+                    isDummy: true
+                }
+            ];
                 for(let i=0; i<arr.length; i++) {
                     let d = arr[i];
                     let p = { ...d, storeName: window.storeProfile.name || "Toko SUQNA", storePhone: window.storeProfile.phone || "", ownerId: window.userId, hasVariants: false, variants: [], timestamp: Date.now() - (i*1000) };
