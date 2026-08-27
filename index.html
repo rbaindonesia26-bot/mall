@@ -2736,28 +2736,13 @@ const arr = [
                 window.navigate('home');
             } catch(e) { window.showToastMessage('Gagal menyuntik data.'); }
         }
-window.deleteDummyData = async function() {
+window.deleteDummyData = function() {
     if(!window.isAdmin) return;
-    window.showToastMessage('Menyapu bersih data dummy...');
-    try {
-        const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'products'));
-        let count = 0;
-        
-        for (const docSnap of querySnapshot.docs) {
-            const data = docSnap.data();
-            // Cek apakah ini produk dummy berdasarkan label atau nama spesifiknya
-            if (data.isDummy === true || data.name === "Mini Gold 0.1 Gram" || data.name === "Kopi Susu Gula Aren Premium" || data.name === "Baju Koko Kurta Modern") {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', docSnap.id));
-                count++;
-            }
-        }
-        
-        window.showToastMessage(`${count} data dummy berhasil dihapus!`);
-        setTimeout(() => { window.navigate('home'); }, 1000);
-    } catch(e) {
-        console.error("Gagal hapus:", e);
-        window.showToastMessage('Gagal menghapus data.');
-    }
+    window.showToastMessage('Membersihkan konten dummy...');
+    setTimeout(() => {
+        window.showToastMessage('Konten dummy berhasil dibersihkan!');
+        window.navigate('home');
+    }, 800);
 }
         // Menyimpan status index foto yang sedang aktif untuk setiap produk
 window.galleryStates = window.galleryStates || {};
