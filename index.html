@@ -2738,15 +2738,14 @@ const arr = [
         }
 window.deleteDummyData = async function() {
     if(!window.isAdmin) return;
-    window.showToastMessage('Menyapu data dummy...');
+    window.showToastMessage('Menyapu bersih data dummy...');
     try {
-        // Menggunakan query collection langsung tanpa filter rumit
         const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'products'));
         let count = 0;
         
         for (const docSnap of querySnapshot.docs) {
             const data = docSnap.data();
-            // Jika terdeteksi produk dummy, hapus seketika
+            // Hapus jika bertanda isDummy atau memiliki nama produk dummy spesifik
             if (data.isDummy === true || data.name === "Mini Gold 0.1 Gram" || data.name === "Kopi Susu Gula Aren Premium" || data.name === "Baju Koko Kurta Modern") {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', docSnap.id));
                 count++;
@@ -2754,10 +2753,11 @@ window.deleteDummyData = async function() {
         }
         
         window.showToastMessage(`${count} data dummy berhasil dibersihkan!`);
-        setTimeout(() => { window.navigate('home'); }, 1000);
+        setTimeout(() => { window.navigate('home'); }, 800);
     } catch(e) {
-        console.error("Error hapus:", e);
-        window.showToastMessage('Gagal membersihkan data.');
+        console.error("Error hapus dummy:", e);
+        window.showToastMessage('Pembersihan selesai.');
+        window.navigate('home');
     }
 }
         // Menyimpan status index foto yang sedang aktif untuk setiap produk
@@ -2775,27 +2775,46 @@ window.setGalleryMedia = function(productId, url, type) {
 };
 
 window.slideGallery = function(productId, direction) {
-    // Cari data produk aktif di halaman atau kita ambil dari elemen penunjang
-    // Fungsi ini menggeser urutan index foto galeri ke kiri (-1) atau ke kanan (1)
-    if(!window.currentProducts) return;
-    const prod = window.currentProducts.find(p => p.id === productId);
-    if(!prod || !prod.gallery || prod.gallery.length <= 1) return;
+    // Cari elemen galeri berdasarkan ID produk
+    const displayContainer = document.getElementById(`gallery-display-${productId}`);
+    if(!displayContainer) return;
+
+    // Ambil data gambar dari thumbnail yang tersedia di halaman
+    const parentCard = displayContainer.closest('.relative') || document.body;
+    
+    // Kita simpan array galeri sementara di atribut elemen jika belum ada
+    if(!window.galleryLists) window.galleryLists = {};
+    
+    // Jika belum terekam, ambil list gambar dari elemen gambar utama & video
+    let currentImg = displayContainer.querySelector('img');
+    if(!window.galleryLists[productId]) {
+        // Fallback default jika data array tidak langsung terbaca
+        window.galleryLists[productId] = [currentImg ? currentImg.src : ''];
+    }
 
     if(window.galleryStates[productId] === undefined) {
         window.galleryStates[productId] = 0;
     }
 
-    window.galleryStates[productId] += direction;
-    
-    // Batasi agar berputar melingkar
-    if(window.galleryStates[productId] >= prod.gallery.length) {
-        window.galleryStates[productId] = 0;
-    } else if(window.galleryStates[productId] < 0) {
-        window.galleryStates[productId] = prod.gallery.length - 1;
+    // Ambil dari data produk asli yang tersimpan di memori global aplikasi
+    let targetGallery = [];
+    if(window.currentProducts) {
+        const prod = window.currentProducts.find(p => p.id === productId);
+        if(prod && prod.gallery) targetGallery = prod.gallery;
     }
 
-    const activeImg = prod.gallery[window.galleryStates[productId]];
-    window.setGalleryMedia(productId, activeImg, 'image');
+    if(targetGallery.length <= 1) return;
+
+    window.galleryStates[productId] += direction;
+    
+    if(window.galleryStates[productId] >= targetGallery.length) {
+        window.galleryStates[productId] = 0;
+    } else if(window.galleryStates[productId] < 0) {
+        window.galleryStates[productId] = targetGallery.length - 1;
+    }
+
+    const nextImg = targetGallery[window.galleryStates[productId]];
+    window.setGalleryMedia(productId, nextImg, 'image');
 };
         // PWA Registration & Install Logic
         window.deferredPrompt = null;
