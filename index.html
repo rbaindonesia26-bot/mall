@@ -2738,22 +2738,30 @@ const arr = [
         }
 window.deleteDummyData = function() {
     if(!window.isAdmin) return;
-    window.showToastMessage('Membersihkan konten dummy...');
+    window.showToastMessage('Membersihkan total data dummy...');
     
-    // Filter produk agar produk dummy langsung hilang dari memori aplikasi
+    // 1. Bersihkan dari memori global produk aktif
     if(window.currentProducts) {
         window.currentProducts = window.currentProducts.filter(p => !p.isDummy && p.name !== "Mini Gold 0.1 Gram" && p.name !== "Kopi Susu Gula Aren Premium" && p.name !== "Baju Koko Kurta Modern");
     }
+
+    // 2. Bersihkan juga data produk di localStorage jika tersimpan di sana
+    try {
+        let savedProducts = JSON.parse(localStorage.getItem('suqna_products') || '[]');
+        if(savedProducts.length > 0) {
+            let filtered = savedProducts.filter(p => !p.isDummy && p.name !== "Mini Gold 0.1 Gram" && p.name !== "Kopi Susu Gula Aren Premium" && p.name !== "Baju Koko Kurta Modern");
+            localStorage.setItem('suqna_products', JSON.stringify(filtered));
+        }
+    } catch(err) {
+        console.error(err);
+    }
     
     setTimeout(() => {
-        window.showToastMessage('Semua konten dummy berhasil dibersihkan!');
-        // Paksa halaman beranda dirender ulang seketika
-        if(typeof window.renderHome === 'function') {
-            window.renderHome();
-        } else {
-            window.navigate('home');
-        }
-    }, 500);
+        window.showToastMessage('Etalase berhasil dibersihkan!');
+        window.navigate('home');
+        // Muat ulang halaman secara otomatis untuk memastikan pembersihan total
+        window.location.reload();
+    }, 600);
 }
         // Menyimpan status index foto yang sedang aktif untuk setiap produk
 window.galleryStates = window.galleryStates || {};
