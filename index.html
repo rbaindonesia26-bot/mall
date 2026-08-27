@@ -2738,16 +2738,21 @@ const arr = [
         }
 window.deleteDummyData = function() {
     if(!window.isAdmin) return;
-    window.showToastMessage('Membersihkan data dummy...');
+    window.showToastMessage('Membersihkan konten dummy...');
     
-    // Sembunyikan atau bersihkan data dummy dari memori tampilan lokal
+    // Filter produk agar produk dummy langsung hilang dari memori aplikasi
     if(window.currentProducts) {
         window.currentProducts = window.currentProducts.filter(p => !p.isDummy && p.name !== "Mini Gold 0.1 Gram" && p.name !== "Kopi Susu Gula Aren Premium" && p.name !== "Baju Koko Kurta Modern");
     }
     
     setTimeout(() => {
         window.showToastMessage('Semua konten dummy berhasil dibersihkan!');
-        window.navigate('home');
+        // Paksa halaman beranda dirender ulang seketika
+        if(typeof window.renderHome === 'function') {
+            window.renderHome();
+        } else {
+            window.navigate('home');
+        }
     }, 500);
 }
         // Menyimpan status index foto yang sedang aktif untuk setiap produk
