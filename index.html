@@ -2715,25 +2715,25 @@ const arr = [
         }
 window.deleteDummyData = async function() {
     if(!window.isAdmin) return;
-    window.showToastMessage('Menyapu semua data dummy...');
+    window.showToastMessage('Menyapu data dummy...');
     try {
-        const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-        const querySnapshot = await getDocs(productsRef);
-        
+        // Menggunakan query collection langsung tanpa filter rumit
+        const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'products'));
         let count = 0;
+        
         for (const docSnap of querySnapshot.docs) {
-            let data = docSnap.data();
-            // Asalkan ada label isDummy: true, langsung hapus!
-            if (data.isDummy === true) {
+            const data = docSnap.data();
+            // Jika terdeteksi produk dummy, hapus seketika
+            if (data.isDummy === true || data.name === "Mini Gold 0.1 Gram" || data.name === "Kopi Susu Gula Aren Premium" || data.name === "Baju Koko Kurta Modern") {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', docSnap.id));
                 count++;
             }
         }
         
         window.showToastMessage(`${count} data dummy berhasil dibersihkan!`);
-        window.navigate('home');
+        setTimeout(() => { window.navigate('home'); }, 1000);
     } catch(e) {
-        console.error(e);
+        console.error("Error hapus:", e);
         window.showToastMessage('Gagal membersihkan data.');
     }
 }
