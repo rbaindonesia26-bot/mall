@@ -2376,6 +2376,11 @@ window.shareProduct = async function(id) {
             const name = document.getElementById('new-prod-name').value;
             const subcat = document.getElementById('subcat-select').value;
             const desc = document.getElementById('new-prod-desc').value;
+            const galleryInput = document.getElementById('new-prod-gallery') ? document.getElementById('new-prod-gallery').value : '';
+            const videoInput = document.getElementById('new-prod-video') ? document.getElementById('new-prod-video').value : '';
+
+    window.tempGalleryArray = galleryInput ? galleryInput.split(',').map(s => s.trim()).filter(s => s !== '') : [];
+    window.tempVideoUrl = videoInput ? videoInput.trim() : '';
             
             const useVariants = document.getElementById('use-variants') ? document.getElementById('use-variants').checked : false;
             let price = 0, stock = 0;
