@@ -2715,17 +2715,15 @@ const arr = [
         }
 window.deleteDummyData = async function() {
     if(!window.isAdmin) return;
-    window.showToastMessage('Menyapu data dummy...');
+    window.showToastMessage('Menyapu semua data dummy...');
     try {
         const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-        // Cari semua produk milik toko ini
-        const q = query(productsRef, where("ownerId", "==", window.userId));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(productsRef);
         
         let count = 0;
         for (const docSnap of querySnapshot.docs) {
             let data = docSnap.data();
-            // Jika ada label isDummy: true, maka HAPUS!
+            // Asalkan ada label isDummy: true, langsung hapus!
             if (data.isDummy === true) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', docSnap.id));
                 count++;
@@ -2733,7 +2731,7 @@ window.deleteDummyData = async function() {
         }
         
         window.showToastMessage(`${count} data dummy berhasil dibersihkan!`);
-        window.navigate('home'); // Kembali ke etalase utama
+        window.navigate('home');
     } catch(e) {
         console.error(e);
         window.showToastMessage('Gagal membersihkan data.');
