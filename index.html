@@ -2776,24 +2776,30 @@ window.setGalleryMedia = function(productId, url, type) {
 window.galleryIndexes = window.galleryIndexes || {};
 
 window.slideGallery = function(productId, direction) {
-    if(!window.currentProducts) return;
-    const prod = window.currentProducts.find(p => p.id === productId);
-    if(!prod || !prod.gallery || prod.gallery.length <= 1) return;
+    const displayContainer = document.getElementById(`gallery-display-${productId}`);
+    if(!displayContainer) return;
 
-    if(window.galleryIndexes[productId] === undefined) {
-        window.galleryIndexes[productId] = 0;
-    }
-
-    window.galleryIndexes[productId] += direction;
+    // Cari kontainer terdekat atau ambil elemen produk
+    const parentContainer = displayContainer.closest('div.relative') || document.body;
     
-    if(window.galleryIndexes[productId] >= prod.gallery.length) {
-        window.galleryIndexes[productId] = 0;
-    } else if(window.galleryIndexes[productId] < 0) {
-        window.galleryIndexes[productId] = prod.gallery.length - 1;
+    // Ambil semua sumber gambar dari thumbnail yang tampil di layar
+    const thumbnails = document.querySelectorAll(`img[onclick*="setGalleryMedia('${productId}'"]`);
+    if(thumbnails.length <= 1) return;
+
+    let urls = Array.from(thumbnails).map(img => img.src);
+    let currentImg = displayContainer.querySelector('img');
+    let currentIndex = currentImg ? urls.indexOf(currentImg.src) : 0;
+
+    if(currentIndex === -1) currentIndex = 0;
+
+    currentIndex += direction;
+    if(currentIndex >= urls.length) {
+        currentIndex = 0;
+    } else if(currentIndex < 0) {
+        currentIndex = urls.length - 1;
     }
 
-    const nextImgUrl = prod.gallery[window.galleryIndexes[productId]];
-    window.setGalleryMedia(productId, nextImgUrl, 'image');
+    window.setGalleryMedia(productId, urls[currentIndex], 'image');
 };
         // PWA Registration & Install Logic
         window.deferredPrompt = null;
