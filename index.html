@@ -41,6 +41,8 @@
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .logo-glow { filter: drop-shadow(0px 4px 12px rgba(255, 255, 255, 0.4)); }
+        body { background-color: #09090b !important; color: #f4f4f5 !important; }
+    .vvip-banner-gold { border: 1px solid rgba(212, 175, 55, 0.35) !important; box-shadow: 0 0 35px rgba(212, 175, 55, 0.12) !important; }
     </style>
 <style>
 .pita-kemerdekaan {
@@ -73,12 +75,12 @@
   }
 </style>
 </head>
-<body class="text-gray-800 font-sans flex justify-center min-h-[100dvh] bg-white overflow-hidden">
-<!-- JURUS LAYAR TIRAI (SPLASH SCREEN) -->
-    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
-        <!-- Teks Logo Berdenyut -->
+<body class="text-gray-100 font-sans flex justify-center min-h-[100dvh] bg-[#09090b] overflow-hidden">
+    <!-- JURUS LAYAR TIRAI (SPLASH SCREEN) -->
+    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-[#09090b] flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
+    <!-- Teks Logo Berdenyut -->
 <!-- Teks Logo Berdenyut dengan Gradasi Oranye-Ungu -->
-        <h1 class="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#5E1085] to-[#FF6A00] bg-clip-text text-transparent tracking-widest animate-pulse mb-4">
+        <h1 class="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#D4AF37] to-[#FF6A00] bg-clip-text text-transparent tracking-widest animate-pulse mb-4">
             SUQNA
         </h1>
         <!-- Animasi Loading Melingkar (Oranye Aksen) -->
@@ -88,8 +90,7 @@
             Menyiapkan etalase...
         </p>
     </div>
-    <div id="app" class="w-full h-[100dvh] mx-auto bg-white relative overflow-hidden flex flex-col">
-    
+    <div id="app" class="w-full h-[100dvh] mx-auto bg-[#09090b] relative overflow-hidden flex flex-col vvip-banner-gold">    
     <!-- PITA HUT RI 81 (Mulai) -->
     <div class="pita-kemerdekaan">
         <span>SPECIAL 9.9</span>
@@ -1622,7 +1623,7 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
 
             return `
                 <!-- STICKY HEADER ZONE -->
-                <div class="sticky top-0 z-[70] w-full bg-gradient-to-b from-[#4c1d95] to-[#541ea8] shadow-md transition-all">
+                    <div class="sticky top-0 z-[70] w-full bg-[#09090b] border-b border-amber-500/20 shadow-md transition-all">   
                     
                     <!-- TOP BAR (Khusus Desktop) -->
                     <div class="hidden md:flex justify-between items-center py-1.5 px-5 border-b border-white/10 max-w-7xl mx-auto w-full text-[11px] text-purple-100 font-medium tracking-wide">
@@ -2935,4 +2936,3 @@ window.slideGallery = function(productId, direction) {
     </script>
 </body>
 </html>
-
