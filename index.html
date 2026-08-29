@@ -151,31 +151,41 @@
             </div>
         </div>
 
-        <!-- Modal Checkout Options -->
+        <!-- Modal Checkout Options (Ala Sultan) -->
         <div id="checkout-modal" class="hidden absolute inset-0 bg-black/60 z-[105] flex items-end sm:items-center justify-center backdrop-blur-sm transition-opacity pb-safe sm:pb-0">
             <div class="bg-white rounded-t-[2rem] sm:rounded-[2rem] p-6 w-full sm:max-w-md sm:mb-10 shadow-2xl transform translate-y-full transition-transform duration-300" id="checkout-modal-content">
                 <div class="flex justify-between items-center mb-5">
-                    <h3 class="text-lg font-black text-gray-900 flex items-center gap-2"><i data-lucide="truck" class="w-5 h-5 text-orange-500"></i> Detail Pengiriman</h3>
+                    <h3 class="text-lg font-black text-gray-900 flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-purple-600"></i> Konfirmasi Pembayaran & Pengiriman</h3>
                     <button onclick="window.closeCheckoutModal()" class="text-gray-400 hover:text-gray-800 bg-gray-100 p-2 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button>
                 </div>
                 
                 <div class="space-y-4 mb-6">
                     <div class="space-y-1.5">
-                        <label class="text-[10px] text-gray-500 font-bold ml-1 uppercase tracking-wide">Pilih Metode Pengiriman</label>
+                        <label class="text-[10px] text-gray-500 font-bold ml-1 uppercase tracking-wide">Metode Pengiriman</label>
                         <select id="checkout-delivery" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-800 focus:ring-2 focus:ring-purple-600/50 outline-none">
                             <option value="Ambil Sendiri di Toko">Ambil Sendiri di Toko</option>
                             <option value="Kurir Lokal / Ojol">Kurir Lokal / Ojol</option>
-                            <option value="Ekspedisi (JNE/J&T dll)">Ekspedisi (JNE/J&T dll)</option>
+                            <option value="Ekspedisi Reguler">Ekspedisi Reguler (JNE/J&T dll)</option>
                         </select>
                     </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] text-gray-500 font-bold ml-1 uppercase tracking-wide">Metode Pembayaran Syariah</label>
+                        <select id="checkout-payment" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-800 focus:ring-2 focus:ring-purple-600/50 outline-none">
+                            <option value="Transfer Bank / QRIS">Transfer Bank / QRIS (Verifikasi Otomatis)</option>
+                            <option value="COD (Bayar di Tempat)">COD / Bayar di Tempat (Sesuai Syariah)</option>
+                            <option value="Bayar Langsung ke Penjual">Konfirmasi Langsung ke Penjual</option>
+                        </select>
+                    </div>
+
                     <div class="space-y-1.5">
                         <label class="text-[10px] text-gray-500 font-bold ml-1 uppercase tracking-wide">Catatan Pesanan (Opsional)</label>
-                        <textarea id="checkout-notes" rows="2" placeholder="Cth: Tolong dibungkus kado, warna merah..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium text-gray-800 text-sm focus:ring-2 focus:ring-purple-600/50 outline-none transition-all"></textarea>
+                        <textarea id="checkout-notes" rows="2" placeholder="Cth: Tolong pastikan barang dikemas aman..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium text-gray-800 text-sm focus:ring-2 focus:ring-purple-600/50 outline-none transition-all"></textarea>
                     </div>
                 </div>
 
                 <button onclick="window.confirmCheckout()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-lg py-4 rounded-2xl shadow-lg shadow-orange-200 active:scale-95 transition-transform flex justify-center items-center gap-2">
-                    <i data-lucide="message-circle" class="w-5 h-5"></i> Lanjut Pesan via WA
+                    <i data-lucide="message-circle" class="w-5 h-5"></i> Kirim Struk Pesanan ke WA
                 </button>
             </div>
         </div>
@@ -807,6 +817,7 @@
             window.currentCheckoutStoreId = storeOwnerId;
             document.getElementById('checkout-notes').value = '';
             document.getElementById('checkout-delivery').value = 'Ambil Sendiri di Toko';
+            document.getElementById('checkout-payment').value = 'Transfer Bank / QRIS';
             document.getElementById('checkout-modal').classList.remove('hidden');
             setTimeout(() => document.getElementById('checkout-modal-content').classList.remove('translate-y-full'), 50);
         }
@@ -2358,6 +2369,7 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
             if(!window.currentCheckoutStoreId) return;
             const storeOwnerId = window.currentCheckoutStoreId;
             const deliveryMethod = document.getElementById('checkout-delivery').value;
+            const paymentMethod = document.getElementById('checkout-payment').value;
             const notes = document.getElementById('checkout-notes').value.trim();
 
             if(!window.userId) {
@@ -2371,12 +2383,12 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
             
             const totalAmount = storeItems.reduce((s,i) => s + i.price, 0);
             const firstItem = storeItems[0];
-            const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            const orderId = 'SUQ-' + Math.floor(100000 + Math.random() * 900000);
             
             const order = { 
                 items: storeItems, totalAmount: totalAmount, status: 'Dikemas', 
                 timestamp: Date.now(), storeOwnerId: storeOwnerId,
-                delivery: deliveryMethod, notes: notes
+                delivery: deliveryMethod, payment: paymentMethod, notes: notes
             };
             
             await setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'orders', orderId), order);
@@ -2403,17 +2415,34 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
             let waLink = null;
             const phone = firstItem.storePhone || '';
             if(phone) {
-                let text = `Halo *${firstItem.storeName || 'SUQNA Seller'}*,\nSaya ingin memesan dari etalase Anda:\n\n`;
-                storeItems.forEach(item => { text += `- ${item.name} ${item.variantName ? `(${item.variantName})` : ''} (Rp ${item.price.toLocaleString('id-ID')})\n`; });
-                text += `\n*Total Belanja: Rp ${totalAmount.toLocaleString('id-ID')}*\n`;
-                text += `\n🚚 *Metode Pengiriman:* ${deliveryMethod}`;
-                if(notes) text += `\n📝 *Catatan:* ${notes}`;
-                
                 const buyerName = window.userProfile.name || (window.userEmail ? window.userEmail.split('@')[0] : 'Pembeli');
-                const buyerAddress = window.userProfile.address || '(Pembeli belum mengisi alamat lengkap)';
-                text += `\n\n📦 *Data Pembeli:*\nNama: ${buyerName}\nAlamat: ${buyerAddress}\n`;
+                const buyerAddress = window.userProfile.address || '(Alamat belum diatur di profil)';
+
+                let text = `📦 *STRUK PESANAN RESMI - SUQNA*\n`;
+                text += `----------------------------------------\n`;
+                text += `🆔 *No. Pesanan:* ${orderId}\n`;
+                text += `📅 *Waktu:* ${new Date().toLocaleString('id-ID')}\n`;
+                text += `----------------------------------------\n\n`;
+                text += `👤 *DATA PEMBELI*\n`;
+                text += `• Nama: *${buyerName}*\n`;
+                text += `• Alamat: ${buyerAddress}\n\n`;
+                text += `🛒 *DETAIL PRODUK*\n`;
                 
-                text += `\nMohon informasi ketersediaannya ya. Terima kasih!`;
+                storeItems.forEach((item, index) => {
+                    text += `${index + 1}. *${item.name}*\n`;
+                    if(item.variantName) text += `   - Varian: ${item.variantName}\n`;
+                    text += `   - Harga: Rp ${item.price.toLocaleString('id-ID')}\n`;
+                });
+
+                text += `\n----------------------------------------\n`;
+                text += `🚚 *Pengiriman:* ${deliveryMethod}\n`;
+                text += `💳 *Pembayaran:* ${paymentMethod}\n`;
+                if(notes) text += `📝 *Catatan:* ${notes}\n`;
+                text += `----------------------------------------\n`;
+                text += `💰 *TOTAL TAGIHAN: Rp ${totalAmount.toLocaleString('id-ID')}*\n`;
+                text += `----------------------------------------\n\n`;
+                text += `Halo *${firstItem.storeName || 'Penjual'}*, saya ingin memproses pesanan di atas melalui platform SUQNA. Mohon konfirmasi ketersediaan dan total pembayarannya. Terima kasih! 🙏`;
+
                 let cleanPhone = phone.replace(/\D/g, '');
                 if(cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1); 
                 waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
@@ -2421,7 +2450,7 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
 
             window.cart = window.cart.filter(i => i.ownerId !== storeOwnerId);
             window.closeCheckoutModal();
-            window.showModal('Pesanan Dibuat', `Pesanan untuk ${firstItem.storeName} berhasil dibuat. Silakan lanjut chat ke WhatsApp penjual.`, waLink);
+            window.showModal('Pesanan Dibuat 🎉', `Struk pesanan berhasil dibuat dengan ID: ${orderId}. Silakan lanjutkan pengiriman struk ke WhatsApp penjual.`, waLink);
             window.navigate('account');
         }
 
@@ -2913,7 +2942,6 @@ const arr = [
             window.showToastMessage('Menghapus data dummy dari server Firebase...');
             
             try {
-                // Deteksi mana saja yang merupakan produk dummy
                 const dummyProducts = window.products.filter(p => 
                     p.isDummy === true || 
                     p.name === "Mini Gold 0.1 Gram" || 
@@ -2921,7 +2949,6 @@ const arr = [
                     p.name === "Baju Koko Kurta Modern"
                 );
                 
-                // Tembak perintah hapus langsung ke database Firebase
                 for (let dp of dummyProducts) {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', dp.id));
                 }
