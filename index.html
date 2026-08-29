@@ -125,7 +125,7 @@
         </h1>
         <div class="w-10 h-10 border-4 border-gray-200 border-t-[#FF6A00] rounded-full animate-spin"></div>        
         <p class="mt-5 text-sm text-gray-500 font-medium tracking-wide animate-pulse">
-            Menyiapkan etalase high-class...
+            Menyiapkan ekosistem dynamic enterprise...
         </p>
     </div>
     <div id="app" class="w-full h-[100dvh] mx-auto bg-[#09090b] relative overflow-hidden flex flex-col vvip-banner-gold gold-glow-border">
@@ -1300,12 +1300,10 @@
             const prodReviews = window.reviews.filter(r => r.productId === p.id);
             const avgRating = prodReviews.length > 0 ? (prodReviews.reduce((sum, r) => sum + r.rating, 0) / prodReviews.length).toFixed(1) : 0;
 
-            // Grafik Rating Persentase
             const totalRevCount = prodReviews.length;
             const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
             prodReviews.forEach(r => { if(ratingCounts[r.rating] !== undefined) ratingCounts[r.rating]++; });
 
-            // Diskusi Produk Terkait
             const prodDiscussions = window.discussions.filter(d => d.productId === p.id);
 
             let catIcon = "layout-grid"; let catColor = "text-purple-500"; let catBg = "bg-purple-50";
@@ -2288,7 +2286,7 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                                 <div class="bg-orange-500 text-white text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">SELLER</div>
                                 <h2 class="text-xl font-black text-white flex items-center gap-2">
                                     Dasbor Toko
-                                    <!-- Lonceng Notifikasi Pesanan Masuk -->
+                                    <!-- Lonceng Notifikasi Pesanan Masuk (Real-Time Badge) -->
                                     <span class="relative inline-flex items-center justify-center bg-gray-800 p-2 rounded-full border border-gray-700 text-amber-400 cursor-pointer" title="Pesanan Masuk">
                                         <i data-lucide="bell" class="w-4 h-4"></i>
                                         ${window.incomingOrders.length > 0 ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce border border-white">${window.incomingOrders.length}</span>` : ''}
