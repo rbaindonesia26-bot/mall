@@ -2690,30 +2690,35 @@ if (flashSaleProducts.length > 0) {
                 const buyerName = window.userProfile.name || (window.userEmail ? window.userEmail.split('@')[0] : 'Pembeli');
                 const buyerAddress = window.userProfile.address || '(Alamat belum diatur di profil)';
 
-                let text = `📦 *STRUK PESANAN RESMI - SUQNA*\n`;
-                text += `----------------------------------------\n`;
-                text += `🆔 *No. Pesanan:* ${orderId}\n`;
-                text += `📅 *Waktu:* ${new Date().toLocaleString('id-ID')}\n`;
-                text += `----------------------------------------\n\n`;
-                text += `👤 *DATA PEMBELI*\n`;
-                text += `• Nama: *${buyerName}*\n`;
-                text += `• Alamat: ${buyerAddress}\n\n`;
-                text += `🛒 *DETAIL PRODUK*\n`;
+            let text = `✨ *INVOICE PEMBELIAN - SUQNA* ✨\n`;
+                text += `━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                text += `🏪 *Toko Tujuan:* ${firstItem.storeName || 'Penjual'}\n`;
+                text += `🆔 *Order ID:* ${orderId}\n`;
+                text += `📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}\n`;
+                text += `━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+                text += `👤 *INFO PEMBELI*\n`;
+                text += `▪️ *Nama:* ${buyerName}\n`;
+                text += `▪️ *Alamat:* ${buyerAddress}\n\n`;
+                text += `🛒 *DETAIL PESANAN*\n`;
                 
                 storeItems.forEach((item, index) => {
-                    text += `${index + 1}. *${item.name}*\n`;
-                    if(item.variantName) text += `   - Varian: ${item.variantName}\n`;
-                    text += `   - Harga: Rp ${item.price.toLocaleString('id-ID')}\n`;
+                    // Deteksi jika barang ini adalah barang Flash Sale
+                    const isFlash = (item.isFlashSale === 'true' || item.isFlashSale === true) ? '⚡' : '🔸';
+                    
+                    text += `${isFlash} *${item.name}*\n`;
+                    if(item.variantName) text += `   ╰ Varian: _${item.variantName}_\n`;
+                    text += `   ╰ Harga: Rp ${item.price.toLocaleString('id-ID')}\n`;
                 });
 
-                text += `\n----------------------------------------\n`;
+                text += `\n━━━━━━━━━━━━━━━━━━━━━━━\n`;
                 text += `🚚 *Pengiriman:* ${deliveryMethod}\n`;
                 text += `💳 *Pembayaran:* ${paymentMethod}\n`;
-                if(notes) text += `📝 *Catatan:* ${notes}\n`;
-                text += `----------------------------------------\n`;
-                text += `💰 *TOTAL TAGIHAN: Rp ${totalAmount.toLocaleString('id-ID')}*\n`;
-                text += `----------------------------------------\n\n`;
-                text += `Halo *${firstItem.storeName || 'Penjual'}*, saya ingin memproses pesanan di atas melalui platform SUQNA. Mohon konfirmasi ketersediaan dan total pembayarannya. Terima kasih! 🙏`;
+                if(notes) text += `📝 *Catatan:* _${notes}_\n`;
+                text += `━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                text += `💰 *TOTAL BAYAR: Rp ${totalAmount.toLocaleString('id-ID')}*\n`;
+                text += `━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+                text += `Assalamu'alaikum Admin *${firstItem.storeName || 'Penjual'}*,\n\nSaya bermaksud memproses pesanan di atas melalui aplikasi *SUQNA*. Mohon konfirmasi ketersediaan produk dan instruksi pembayaran selanjutnya.\n\nTerima kasih banyak! 🙏\n\n`;
+                text += `🌐 _Dibuat otomatis oleh Aplikasi SUQNA_`;
 
                 let cleanPhone = phone.replace(/\D/g, '');
                 if(cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1); 
