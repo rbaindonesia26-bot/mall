@@ -1121,8 +1121,8 @@
                     <div class="h-36 sm:h-44 bg-gray-50 relative w-full overflow-hidden group">
                         <img src="${p.imgUrl}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
                         ${ isFlashAktif ? `
-                        <div class="absolute top-0 right-0 animate-pulse bg-gradient-to-l from-red-600 to-red-700 text-white text-[9px] sm:text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-md z-10 flex items-center gap-1 border-b border-l border-red-500 tracking-wider">
-                            ⚡ FLASH SALE
+                        <div class="absolute top-0 right-0 bg-gradient-to-l from-red-600 to-red-800 text-white text-[9px] sm:text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-lg z-10 flex items-center gap-1 border-b border-l border-red-400 tracking-wider">
+                            ⚡ <span class="flashsale-timer font-mono drop-shadow-md" data-endtime="${p.flashSaleEnd}">...</span>
                         </div>
                         ` : '' }
                         <div class="absolute top-2 left-2 bg-amber-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase shadow-sm flex items-center gap-1 border border-amber-300">
