@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- META TAGS SEO & OPEN GRAPH -->
     <meta name="description" content="Pasar Digital Syariah & Multi-Vendor Lokal. 100% Gratis Tanpa Biaya Admin.">
     <meta property="og:title" content="SUQNA - Pasar Kita, Untuk Semua">
     <meta property="og:description" content="Ayo belanja kebutuhan harian dan dukung UMKM lokal di SUQNA. Buka toko online Anda sekarang, 100% Gratis!">
@@ -42,12 +41,50 @@
         .logo-glow { filter: drop-shadow(0px 4px 12px rgba(255, 255, 255, 0.4)); }
         
         /* --- DYNAMIC THEME (DARK / LIGHT MODE) --- */
-        body.theme-dark { background-color: #09090b !important; color: #f4f4f5 !important; }
-        body.theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
-        body.theme-light .bg-white { background-color: #ffffff !important; color: #0f172a !important; }
-        body.theme-light .text-gray-800, body.theme-light .text-gray-900 { color: #0f172a !important; }
-        body.theme-light .text-gray-500, body.theme-light .text-gray-400 { color: #64748b !important; }
-        body.theme-light .bg-gray-50 { background-color: #f1f5f9 !important; }
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+
+        /* LIGHT THEME (Mode Terang) */
+        body.theme-light { background-color: #f8fafc; color: #0f172a; }
+        body.theme-light #app, body.theme-light #splash-screen { background-color: #f8fafc; }
+        body.theme-light #bottom-nav { background-color: #ffffff; border-top-color: #f1f5f9; }
+
+        /* DARK THEME (Mode Gelap) */
+        body.theme-dark { background-color: #09090b; color: #f4f4f5; }
+        body.theme-dark #app, body.theme-dark #splash-screen { background-color: #09090b; }
+        
+        /* Ubah otomatis elemen putih menjadi gelap */
+        body.theme-dark .bg-white { background-color: #18181b !important; border-color: #27272a !important; color: #f4f4f5 !important;}
+        body.theme-dark .bg-gray-50, body.theme-dark .bg-gray-100 { background-color: #27272a !important; border-color: #3f3f46 !important; }
+        body.theme-dark .bg-gray-200 { background-color: #3f3f46 !important; }
+        
+        /* Efek Hover di Mode Gelap */
+        body.theme-dark .hover\:bg-gray-50:hover, body.theme-dark .hover\:bg-gray-100:hover { background-color: #3f3f46 !important; }
+        body.theme-dark .hover\:text-gray-800:hover, body.theme-dark .hover\:text-gray-900:hover { color: #ffffff !important; }
+
+        /* Penyesuaian Teks */
+        body.theme-dark .text-gray-900, body.theme-dark .text-gray-800 { color: #f4f4f5 !important; }
+        body.theme-dark .text-gray-700, body.theme-dark .text-gray-600 { color: #d4d4d8 !important; }
+        body.theme-dark .text-gray-500, body.theme-dark .text-gray-400 { color: #a1a1aa !important; }
+        
+        /* Penyesuaian Garis (Border) */
+        body.theme-dark .border-gray-100, body.theme-dark .border-gray-200, body.theme-dark .border-gray-300 { border-color: #3f3f46 !important; }
+        
+        /* Input & Form */
+        body.theme-dark input:not(.bg-transparent), 
+        body.theme-dark textarea:not(.bg-transparent), 
+        body.theme-dark select:not(.bg-transparent) { 
+            background-color: #27272a !important; 
+            color: #f4f4f5 !important; 
+            border-color: #3f3f46 !important; 
+        }
+        body.theme-dark input.bg-transparent { color: #f4f4f5 !important; }
+        
+        /* Komponen Spesifik */
+        body.theme-dark #bottom-nav { background-color: #18181b !important; border-top-color: #27272a !important; }
+        body.theme-dark .bg-black\/60 { background-color: rgba(0,0,0,0.85) !important; }
+        body.theme-dark .shadow-sm, body.theme-dark .shadow-md, body.theme-dark .shadow-lg, body.theme-dark .shadow-xl { 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important; 
+        }
 
         .vvip-banner-gold { border: 1px solid rgba(212, 175, 55, 0.35) !important; box-shadow: 0 0 35px rgba(212, 175, 55, 0.12) !important; }    
     
@@ -117,9 +154,8 @@
   }
 </style>
 </head>
-<body class="text-gray-100 font-sans flex justify-center min-h-[100dvh] bg-[#09090b] overflow-hidden theme-dark" id="app-body">
-    <!-- JURUS LAYAR TIRAI (SPLASH SCREEN) -->
-    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-[#09090b] flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
+<body class="font-sans flex justify-center min-h-[100dvh] overflow-hidden" id="app-body">
+    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
         <h1 class="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#D4AF37] to-[#FF6A00] bg-clip-text text-transparent tracking-widest animate-pulse mb-4">
             SUQNA
         </h1>
@@ -128,15 +164,13 @@
             Menyiapkan ekosistem dynamic enterprise...
         </p>
     </div>
-    <div id="app" class="w-full h-[100dvh] mx-auto bg-[#09090b] relative overflow-hidden flex flex-col vvip-banner-gold gold-glow-border">
+    <div id="app" class="w-full h-[100dvh] mx-auto relative overflow-hidden flex flex-col vvip-banner-gold gold-glow-border">
         
-        <!-- Toast Notification -->
         <div id="toast" class="hidden absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-900/90 backdrop-blur text-white px-5 py-3 rounded-full text-xs font-bold z-[100] shadow-2xl transition-all whitespace-nowrap flex items-center gap-2 border border-gray-700">
             <i data-lucide="info" class="w-4 h-4 text-orange-400"></i>
             <span id="toast-msg">Notifikasi</span>
         </div>
 
-        <!-- Modal Success -->
         <div id="modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-[2rem] p-7 max-w-[85%] sm:max-w-md w-full text-center shadow-2xl transform scale-100 transition-transform slide-up">
                 <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -156,7 +190,6 @@
             </div>
         </div>
 
-        <!-- Modal Share Ala Sultan -->
         <div id="share-modal" class="hidden absolute inset-0 bg-black/60 z-[130] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-[2rem] p-6 max-w-xs w-full text-center shadow-2xl transform scale-100 transition-transform slide-up">
                 <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -177,7 +210,6 @@
             </div>
         </div>
 
-        <!-- Modal Review / Ulasan -->
         <div id="review-modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-[2rem] p-6 max-w-[85%] sm:max-w-md w-full text-center shadow-2xl transform scale-100 transition-transform slide-up">
                 <h3 class="text-xl font-black text-gray-900 mb-2">Pesanan Diterima!</h3>
@@ -204,7 +236,6 @@
             </div>
         </div>
 
-        <!-- Modal Checkout Options -->
         <div id="checkout-modal" class="hidden absolute inset-0 bg-black/60 z-[105] flex items-end sm:items-center justify-center backdrop-blur-sm transition-opacity pb-safe sm:pb-0">
             <div class="bg-white rounded-t-[2rem] sm:rounded-[2rem] p-6 w-full sm:max-w-md sm:mb-10 shadow-2xl transform translate-y-full transition-transform duration-300" id="checkout-modal-content">
                 <div class="flex justify-between items-center mb-5">
@@ -243,7 +274,6 @@
             </div>
         </div>
 
-        <!-- Modal Konfirmasi Admin -->
         <div id="confirm-modal" class="hidden absolute inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-[2rem] p-7 max-w-[85%] sm:max-w-md w-full text-center shadow-2xl transform scale-100 transition-transform slide-up">
                 <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -259,7 +289,6 @@
             </div>
         </div>
 
-        <!-- Modal Filter Pencarian -->
         <div id="filter-modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center backdrop-blur-sm transition-opacity pb-safe sm:pb-0">
             <div class="bg-white rounded-t-[2rem] sm:rounded-[2rem] p-6 w-full sm:max-w-md sm:mb-10 shadow-2xl transform translate-y-full transition-transform duration-300" id="filter-modal-content">
                 <div class="flex justify-between items-center mb-6">
@@ -301,7 +330,6 @@
             </div>
         </div>
 
-        <!-- Modal Tentang SUQNA -->
         <div id="about-modal" class="hidden absolute inset-0 bg-black/60 z-[120] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-[2rem] p-7 max-w-[85%] sm:max-w-md w-full text-center shadow-2xl transform scale-100 transition-transform slide-up relative overflow-y-auto max-h-[90vh]">
                 <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-600 to-indigo-600"></div>
@@ -349,11 +377,9 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
         <main id="content" class="flex-1 overflow-y-auto overflow-x-hidden relative bg-white pb-28 transition-all duration-300 hide-scroll">
         </main>
 
-        <!-- Tombol Chat Melayang (Floating Chat Button) -->
         <button onclick="window.openFloatingChat()" id="floating-chat-btn" class="fixed bottom-[85px] right-4 md:bottom-10 md:right-10 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.4)] z-[90] hover:scale-110 active:scale-95 transition-all duration-300 group border-2 border-white/50">
             <i data-lucide="message-circle" class="w-7 h-7 group-hover:animate-pulse"></i>
             <span class="absolute -top-1 -right-1 flex h-4 w-4">
@@ -374,7 +400,6 @@
                     <span class="text-[10px] font-medium text-gray-400">Kategori</span>
                 </button>
                 
-                <!-- JUAL (Tombol Orange Besar di Tengah) -->
                 <div class="relative w-[20%] flex justify-center h-full">
                     <button onclick="window.navigate('seller_center')" id="nav-jual" class="absolute bottom-4 flex flex-col items-center justify-center w-[3.5rem] h-[3.5rem] bg-gradient-to-tr from-orange-500 to-amber-400 rounded-full text-white shadow-[0_8px_20px_rgba(249,115,22,0.4)] border-[5px] border-white active:scale-95 transition-transform z-20 group">
                         <i data-lucide="plus" class="w-7 h-7 group-hover:rotate-90 transition-transform duration-300"></i>
@@ -398,7 +423,6 @@
         </nav>
     </div>
 
-    <!-- PWA Installation Prompt -->
     <div id="install-prompt" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-gray-900 text-white p-4 rounded-2xl shadow-2xl z-[150] flex items-center justify-between transition-transform translate-y-full">
         <div class="flex items-center gap-3">
             <img src="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png" class="w-10 h-10 object-contain bg-white rounded-lg p-1">
@@ -455,9 +479,11 @@
         window.toggleTheme = function() {
             window.currentTheme = window.currentTheme === 'theme-dark' ? 'theme-light' : 'theme-dark';
             localStorage.setItem('suqna_theme', window.currentTheme);
+            
             const bodyEl = document.getElementById('app-body');
             if (bodyEl) {
-                bodyEl.className = `text-gray-100 font-sans flex justify-center min-h-[100dvh] overflow-hidden ${window.currentTheme}`;
+                bodyEl.classList.remove('theme-dark', 'theme-light');
+                bodyEl.classList.add(window.currentTheme);
             }
             window.render();
         };
@@ -471,9 +497,9 @@
             }
             container.innerHTML = window.tempVariants.map((v, i) => `
                 <div class="flex gap-2 items-center mb-2 bg-gray-50 p-2.5 rounded-xl border border-gray-200 shadow-sm slide-up">
-                    <input type="text" placeholder="Warna (Cth: Hitam)" value="${v.color || ''}" oninput="window.tempVariants[${i}].color = this.value" class="w-[28%] text-[11px] font-bold text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
-                    <input type="text" placeholder="Ukuran (Cth: XL)" value="${v.size || ''}" oninput="window.tempVariants[${i}].size = this.value" class="w-[25%] text-[11px] font-bold text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
-                    <input type="number" placeholder="Harga (Rp)" value="${v.price || ''}" oninput="window.tempVariants[${i}].price = parseInt(this.value)||0" class="w-[25%] text-[11px] font-black text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
+                    <input type="text" placeholder="Warna (Cth: Hitam)" value="${v.color \vert{}\vert{} ''}" oninput="window.tempVariants[${i}].color = this.value" class="w-[28%] text-[11px] font-bold text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
+                    <input type="text" placeholder="Ukuran (Cth: XL)" value="${v.size \vert{}\vert{} ''}" oninput="window.tempVariants[${i}].size = this.value" class="w-[25%] text-[11px] font-bold text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
+                    <input type="number" placeholder="Harga (Rp)" value="${v.price \vert{}\vert{} ''}" oninput="window.tempVariants[${i}].price = parseInt(this.value)||0" class="w-[25%] text-[11px] font-black text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
                     <input type="number" placeholder="Stok" value="${v.stock !== undefined ? v.stock : 1}" oninput="window.tempVariants[${i}].stock = parseInt(this.value)||0" class="w-[15%] text-[11px] font-black text-gray-900 p-2 rounded-lg bg-white border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500 text-center">
                     <button onclick="window.removeVariantItem(${i})" class="w-[7%] text-red-500 flex justify-center items-center hover:bg-red-50 p-2 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
@@ -1088,8 +1114,7 @@
 
             return `
                 <div onclick="window.openProductDetail('${p.id}')" class="${widthClass} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative cursor-pointer hover:shadow-md transition-shadow">
-                    ${adminDeleteBtn}
-                    ${isOutOfStock ? `<div class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center"><div class="bg-red-500/90 text-white font-black text-xs px-3 py-1 rounded-full shadow-lg transform -rotate-12">SOLD OUT</div></div>` : ''}
+                    ${adminDeleteBtn}${isOutOfStock ? `<div class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center"><div class="bg-red-500/90 text-white font-black text-xs px-3 py-1 rounded-full shadow-lg transform -rotate-12">SOLD OUT</div></div>` : ''}
                     <div class="h-36 sm:h-44 bg-gray-50 relative w-full overflow-hidden group">
                         <img src="${p.imgUrl}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
                         ${ (p.isFlashSale === 'true' || p.isFlashSale === true) && p.flashSaleEnd ? `
@@ -1097,7 +1122,6 @@
                             ⚡ FLASH SALE
                         </div>
                         ` : '' }
-                        <!-- Verified Gold Badge -->
                         <div class="absolute top-2 left-2 bg-amber-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase shadow-sm flex items-center gap-1 border border-amber-300">
                             <i data-lucide="shield-check" class="w-2.5 h-2.5"></i> Terverifikasi
                         </div>
@@ -1361,7 +1385,7 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                 <p class="text-gray-400 text-[9px] uppercase tracking-wider mt-1">Sisa Kuota: ${p.stock} Tersedia</p>
         </div>
         </div>
-        </div>       
+        </div>        
         ` : '' }        
                     <div class="flex justify-between items-start mb-3">
                         <div class="${catBg} ${catColor} text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/50 shadow-sm"><i data-lucide="${catIcon}" class="w-3.5 h-3.5"></i> ${p.category || 'Umum'}</div>
@@ -1397,7 +1421,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                     <h3 class="font-black text-gray-900 text-sm mb-3 flex items-center gap-2"><i data-lucide="align-left" class="w-4 h-4 text-purple-500"></i> Deskripsi Produk</h3>
                     <div class="text-sm text-gray-600 font-medium leading-relaxed bg-white border border-gray-100 p-5 rounded-2xl shadow-sm whitespace-pre-wrap">${p.description || 'Tidak ada deskripsi.'}</div>
                     
-                    <!-- BAGIAN ULASAN & STATISTIK BINTANG -->
                     <div class="mt-8 pt-6 border-t border-gray-100">
                         <h3 class="font-black text-gray-900 text-sm mb-4 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4 text-purple-500"></i> Ulasan & Penilaian Pembeli (${prodReviews.length})</h3>
                         
@@ -1450,7 +1473,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                         </div>
                     </div>
 
-                    <!-- DISKUSI / LIVE Q&A PRODUK -->
                     <div class="mt-8 pt-6 border-t border-gray-100">
                         <h3 class="font-black text-gray-900 text-sm mb-4 flex items-center gap-2"><i data-lucide="help-circle" class="w-4 h-4 text-purple-500"></i> Diskusi & Tanya Jawab Produk</h3>
                         
@@ -1763,7 +1785,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                     <div class="px-5 mt-4 sm:mt-6 mb-6 max-w-7xl mx-auto w-full">
                         <div class="${hasVoucher ? 'flex flex-col md:flex-row gap-4 lg:gap-5' : ''}">
                             
-                            <!-- BANNER UTAMA -->
                             <div class="relative ${hasVoucher ? 'flex-1' : 'w-full'} h-[160px] sm:h-[240px] md:h-[320px] lg:h-[380px] rounded-2xl overflow-hidden shadow-2xl group cursor-pointer border-2 border-gray-100" id="banner-container">
                                 <img id="banner-img" src="${b.img}" class="w-full h-full object-cover transition-all duration-500" />
                                 <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex flex-col justify-center px-5 md:px-12">
@@ -1775,7 +1796,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                                 </div>
                             </div>
                             
-                            <!-- TIKET VOUCHER DINAMIS (SUNGGUHAN & REAL-TIME) -->
                             ${hasVoucher ? `
                             <div class="md:w-[30%] lg:w-[28%] h-[140px] md:h-[320px] lg:h-[380px] bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-yellow-500/40 shadow-[0_0_20px_rgba(212,175,55,0.15)] flex flex-row md:flex-col relative overflow-hidden group cursor-pointer transform transition-transform hover:-translate-y-1 active:scale-95" onclick="window.claimVoucher()">
                                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-70"></div>
@@ -1809,7 +1829,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                         </div>
                     </div>
                     
-                    <!-- CATEGORIES ZONE (SULTAN GLOSSY STYLE) -->
                     <div id="kategori-section" class="px-5 mt-8 mb-4 relative z-0 max-w-7xl mx-auto w-full">
                         <div class="flex justify-between items-end mb-5">
                             <h2 class="font-extrabold text-gray-900 text-lg sm:text-xl">Kategori Pilihan</h2>
@@ -1886,10 +1905,8 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
             ).join('');
 
             return `
-                <!-- STICKY HEADER ZONE -->
                 <div class="sticky top-0 z-[70] w-full bg-[#09090b] border-b border-amber-500/20 shadow-md transition-all">    
                     
-                    <!-- TOP BAR (Khusus Desktop) -->
                     <div class="hidden md:flex justify-between items-center py-1.5 px-5 border-b border-white/10 max-w-7xl mx-auto w-full text-[11px] text-purple-100 font-medium tracking-wide">
                         <div class="flex gap-4">
                             <span onclick="window.openAboutModal()" class="hover:text-white cursor-pointer transition-colors">Tentang SUQNA</span>
@@ -1900,20 +1917,16 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                             <div class="w-px h-3 bg-purple-400/50"></div>
                             <span onclick="window.installPWA()" class="hover:text-white cursor-pointer transition-colors flex items-center gap-1.5"><i data-lucide="download" class="w-3.5 h-3.5"></i> Download Aplikasi</span>
                             <div class="w-px h-3 bg-purple-400/50"></div>
-                            <!-- Tombol Dark/Light Mode Switcher -->
                             <span onclick="window.toggleTheme()" class="hover:text-white cursor-pointer transition-colors flex items-center gap-1.5" title="Ganti Tema Tampilan"><i data-lucide="moon" class="w-3.5 h-3.5"></i> Tema</span>
                             <div class="w-px h-3 bg-purple-400/50"></div>
                             <span onclick="window.open('https://translate.google.com/translate?sl=id&tl=en&u=' + window.location.href, '_blank')" class="hover:text-white cursor-pointer transition-colors flex items-center gap-1.5" title="Terjemahkan ke Bahasa Inggris"><i data-lucide="globe" class="w-3.5 h-3.5"></i> ID / EN</span>
                         </div>
                     </div>
 
-                    <!-- MAIN HEADER (Logo & Search dengan Auto-Complete) -->
                     <div class="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-8 px-5 pt-6 pb-4 md:pt-4">
                         
-                        <!-- Logo -->
                         <div class="flex items-center justify-center md:justify-start h-12 md:h-14 relative z-10 shrink-0 md:mt-1">
                             <img src="https://i.ibb.co.com/MxMTVwJr/Untitled-design-20.png" alt="SUQNA Logo" class="h-full w-auto max-w-[85%] md:max-w-[200px] object-contain scale-105 transition-transform duration-300 logo-glow">
-                            <!-- Tombol Bahasa & Tema Khusus HP -->
                             <div class="absolute right-0 md:hidden z-20 flex gap-2">
                                 <span onclick="window.toggleTheme()" class="flex items-center justify-center gap-1 cursor-pointer text-white bg-white/10 px-2 py-1.5 rounded-lg border border-white/20 backdrop-blur-sm text-[10px] font-medium shadow-sm">
                                     <i data-lucide="moon" class="w-3.5 h-3.5"></i>
@@ -1924,14 +1937,12 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                             </div>
                         </div>
 
-                        <!-- Search Bar & Auto-Complete Suggestions -->
                         <div class="flex-1 flex flex-col w-full max-w-3xl mx-auto md:mx-0 relative">
                             <div class="flex items-center gap-2 w-full">
                                 <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-3 shadow-xl shadow-purple-900/10 focus-within:ring-4 ring-white/30 transition-all relative">
                                     <i data-lucide="search" class="w-5 h-5 text-gray-400 flex-shrink-0"></i>
                                     <input type="text" id="main-search-input" value="${window.currentSearchQuery}" oninput="window.handleLiveSearch(this.value)" placeholder="Cari produk, jasa..." class="flex-1 bg-transparent border-none outline-none text-sm px-3 text-gray-800 placeholder-gray-400 font-bold">
                                     
-                                    <!-- Dropdown Auto-Complete -->
                                     <div id="search-suggestions-dropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[120] overflow-hidden"></div>
                                 </div>
                                 
@@ -1948,7 +1959,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                     </div>
                 </div>
                 
-                <!-- DYNAMIC BODY -->
                 <div id="home-body-wrapper" class="w-full relative z-0">
                     ${window.renderHomeBody()}
                 </div>
@@ -2197,7 +2207,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                         ` : ''}
                     </div>
 
-                    <!-- PANEL KONTROL VOUCHER VVIP -->
                     <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-xl space-y-5 mt-6">
                         <h3 class="font-black text-gray-900 text-sm mb-2 flex items-center gap-2">
                             <i data-lucide="ticket" class="w-4 h-4 text-yellow-500"></i> Pengaturan Tiket VVIP
@@ -2286,7 +2295,6 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
                                 <div class="bg-orange-500 text-white text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">SELLER</div>
                                 <h2 class="text-xl font-black text-white flex items-center gap-2">
                                     Dasbor Toko
-                                    <!-- Lonceng Notifikasi Pesanan Masuk (Real-Time Badge) -->
                                     <span class="relative inline-flex items-center justify-center bg-gray-800 p-2 rounded-full border border-gray-700 text-amber-400 cursor-pointer" title="Pesanan Masuk">
                                         <i data-lucide="bell" class="w-4 h-4"></i>
                                         ${window.incomingOrders.length > 0 ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce border border-white">${window.incomingOrders.length}</span>` : ''}
@@ -3278,7 +3286,10 @@ ${ p.isFlashSale === 'true' && p.flashSaleEnd ? `
 
         // Initialize Theme Class on Load
         const bodyEl = document.getElementById('app-body');
-        if (bodyEl) bodyEl.className = `text-gray-100 font-sans flex justify-center min-h-[100dvh] overflow-hidden ${window.currentTheme}`;
+        if (bodyEl) {
+            // Gunakan classList agar class Tailwind utama tidak hilang
+            bodyEl.classList.add(window.currentTheme);
+        }
 
         window.render();
     </script>
