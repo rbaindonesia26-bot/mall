@@ -1359,13 +1359,13 @@
             <button onclick="window.slideGallery('${p.id}', 1)" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/75 text-white rounded-full flex items-center justify-center opacity-80 transition-opacity">❯</button>
         ` : ''}
 
-        <button onclick="window.navigate('account')" class="absolute top-6 left-5 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-800 shadow-md">
+        <button onclick="window.navigate('account')" class="absolute top-6 left-5 w-10 h-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full flex items-center justify-center text-gray-800 dark:text-white shadow-md transition-colors">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
         </button>
-        <button onclick="window.openShareModal('${p.id}')" class="absolute top-6 right-5 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-800 shadow-md">
+        <button onclick="window.openShareModal('${p.id}')" class="absolute top-6 right-5 w-10 h-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full flex items-center justify-center text-gray-800 dark:text-white shadow-md transition-colors">
             <i data-lucide="share-2" class="w-5 h-5"></i>
         </button>
-
+        
         <div class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-black/50 to-transparent"></div>
     </div>
 
