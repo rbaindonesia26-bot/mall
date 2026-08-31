@@ -2799,7 +2799,7 @@ if (flashSaleProducts.length > 0) {
                     storePhone: window.storeProfile.phone || '',
                     ownerId: window.userId, 
                     imgUrl: finalImgUrl,
-                    gallery: window.tempGalleryArray || [finalImgUrl],
+                    gallery: window.tempGalleryArray.length > 0 ? [finalImgUrl, ...window.tempGalleryArray] : [finalImgUrl],
                     videoUrl: window.tempVideoUrl || '',
                     hasVariants: useVariants, 
                     variants: finalVariants,
